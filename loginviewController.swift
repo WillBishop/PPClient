@@ -14,7 +14,7 @@ class loginviewController: UIViewController {
 
 	var mainStoryboard = UIViewController()
 	
-	@IBOutlet weak var cannotfindSchool: UILabel!
+	@IBOutlet weak var cannotfindSchool: UILabel! //cannotfindschoolAccount seemed too long
 	@IBOutlet weak var daymapUsername: UITextField!
 	
 	@IBOutlet weak var daymapPassword: UITextField!
@@ -46,6 +46,8 @@ class loginviewController: UIViewController {
 			.authenticate(user: daymapUsername.text!, password: daymapPassword.text!) //Alamofire does auto NTLM
 			.responseString { response in
 				print("Got response code \(String(describing: response.response?.statusCode))")
+					 
+				//TODO: Update to support reponse codes in the 200 range, as opposed to just 200.
 				if response.response?.statusCode == 200{
 					self.credentialsCorrect()
 					self.loginProcess.stopAnimating()
