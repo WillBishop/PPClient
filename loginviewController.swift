@@ -14,7 +14,7 @@ class loginviewController: UIViewController {
 
 	var mainStoryboard = UIViewController()
 	
-	@IBOutlet weak var cannotfindSchool: UILabel! //cannotfindschoolAccount seemed too long
+	@IBOutlet weak var cannotfindschoolAccount: UILabel!
 	@IBOutlet weak var daymapUsername: UITextField!
 	
 	@IBOutlet weak var daymapPassword: UITextField!
@@ -24,7 +24,7 @@ class loginviewController: UIViewController {
 	
     override func viewDidLoad() {
         super.viewDidLoad()
-		
+	
 
 		if ((UserDefaults.standard.object(forKey: "isloggedIn") as? String) != nil){ //Returns True if userDefaults contains a key called isloggedIn
 			loggedIn()  // Calls loggedIn() function, which switces user to logged in page.
