@@ -1,1 +1,1 @@
-![Class View](https://i.imgur.com/0CX73zX.png "Needs a facelift")
+![Class View](https://i.imgur.com/CQhBcNK.png "Needs a facelift")
