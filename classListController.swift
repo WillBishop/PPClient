@@ -38,45 +38,41 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 	}
 	
 	func getDiary(){
-		let headers = [
-			"Content-Type": "application/x-www-form-urlencoded"
-		]
 		let keychain = KeychainSwift()
-		let username = keychain.get("username") as! String?
-		let password = keychain.get("password") as! String?
-		let parameters = [
-			"username": username!,
-			"password": password!
-			
-		]
-		//Now that all parameters have been set, the POST can continue.
+		let username = keychain.get("username")!
+		let password = keychain.get("password")!
 		
-		Alamofire.request("https://theapiiamusing.com/getDiary", method: .post,parameters: parameters, headers: headers)
+		Alamofire.request("https://da.gihs.sa.edu.au/stirling/classes/daily/get?username=\(username)&password=\(password)", method: .get)
 			.responseJSON { response in
+
 				if response.result.value != nil{
-					self.classList.removeAll() //This and below removes all items from the list (as the name would imply), this is so any new information added will be easier to access when needed.
+					self.classList.removeAll()
 					self.classNote.removeAll()
 					let json = JSON(response.result.value!)
-					for i in json["classes"]{
-						print(String(describing: i))
-						self.classList.append(String(describing: i.1)) //i.0 is a string, i.1 is the JSON
-					}
-					for i in json["details"]{
-						let name = String(describing: i.1["class"])
-						self.classNote[name] = String(describing: i.1["note"]).replacingOccurrences(of: "INSERTAPOSTROPHE", with: "'")
+					for i in json["daymapDiaryClasses"]{
+						let name = String(describing: i.1["className"])
+						
+						self.classList.append(String(describing: i.1["className"]))
+						
+						if i.1["classNotes"].exists(){
+							print(i.1["classNotes"])
+							self.classNote[name] = String(describing: i.1["classNotes"])
+						} else {
+							self.classNote[name] = "No lesson plans have been entered for this lesson"
+						}
 					}
 					
-					UserDefaults.standard.set(self.classList, forKey: "cachedClasses") //Adds the classes and their notes to the NSUserDefaults, this is my method of caching. I thought keychain would be overkill for that.
+					UserDefaults.standard.set(self.classList, forKey: "cachedClasses")
 					UserDefaults.standard.set(self.classNote, forKey: "cachedNotes")
 					
-					print(self.classList) //Debug, not visible to the user unless they attach to the process, in which case they only see their own classes anyway
+					print(self.classList)
 					
 				} else {
 					//TODO Better error managment, this is just here to prevent an app crash, while still retaining some useful information for debugging
 					print(response)
 					print("Error moving on")
 				}
-				self.diaryTable.reloadData() //Reloads the table so that all the new diary stuff is displayed.
+				self.diaryTable.reloadData()
 		}
 		
 		
@@ -89,17 +85,17 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 	func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 		let cell = diaryTable.dequeueReusableCell(withIdentifier: "class", for: indexPath) as! diaryList
 		cell.name = classList[indexPath.row]
+		var className = classList[indexPath.row]
 		
-		//print(classList[indexPath.row])
 		if classNote[classList[indexPath.row]] != nil{
-			print("setting note")
-			cell.note = classNote[classList[indexPath.row]]!!
+			cell.note = (classNote[className])!!
 		}
 		cell.update()
 		
 		return cell
 		
 	}
+	
 	func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
 		return classList.count
 	}
