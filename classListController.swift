@@ -91,8 +91,22 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 	
 	func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 		let cell = diaryTable.dequeueReusableCell(withIdentifier: "class", for: indexPath) as! diaryList
-		cell.name = classList[indexPath.row]
 		let className = classList[indexPath.row]
+		
+		cell.name = className
+		cell.accessoryType = .disclosureIndicator
+		cell.accessoryView?.frame.origin.y = 0
+		
+		//Display Settings
+		cell.className.font = UIFont.boldSystemFont(ofSize: 17.0)
+		
+		cell.classNote.lineBreakMode = .byWordWrapping
+		cell.classNote.numberOfLines = 2
+		cell.classNote.frame.size.width = 350.0
+		cell.classNote.sizeToFit()
+		//
+		
+		
 		if classNote[classList[indexPath.row]] != nil{
 			cell.note = (classNote[className])!!
 
@@ -143,8 +157,10 @@ class diaryList : UITableViewCell{
 	@IBOutlet weak var classInfo: UILabel!
 	
 	
+	
 	//TODO: Add other class info, such as teachers, presence, time etc
 	func update() {
+		classNote.isHidden = true
 		className.text = name
 		classNote.text = note
 		classPresence.text = presence
