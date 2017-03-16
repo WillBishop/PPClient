@@ -53,11 +53,11 @@ class loginviewController: UIViewController {
 					self.loginProcess.stopAnimating()
 				}
 				else if response.response?.statusCode == 401{
-					self.cannotfindSchool.text = "Incorrect Username or Password"
+					self.cannotfindschoolAccount.text = "Incorrect Username or Password"
 					self.loginProcess.stopAnimating()
 				}
 				else if response.response?.statusCode != 200 && response.response?.statusCode != 401{
-					self.cannotfindSchool.text = "Error, please try again later."
+					self.cannotfindschoolAccount.text = "Error, please try again later."
 					self.loginProcess.stopAnimating()
 				}
 				
