@@ -10,12 +10,38 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 	
 	@IBOutlet var diaryTable: UITableView!
 	
+	
+	
 	var classList = UserDefaults.standard.object(forKey: "cachedClasses") as? [String] ?? [String]()
 	var classNote = UserDefaults.standard.object(forKey: "cachedNotes") as? [String: String?] ?? [String: String!]()
 	var classInfo = UserDefaults.standard.object(forKey: "cachedInfo") as? [String: [String: Any]] ?? [String: [String: Any]]()
 	
-	
+	let displayNote = UITextView(frame: CGRect(x:0, y:0, width:UIScreen.main.bounds.width - 10, height:300))
+	override func viewWillAppear(_ animated: Bool) {
+		self.navigationItem.setHidesBackButton(true, animated:true)
+		var image = UIImage(named: "hamburger")?.withRenderingMode(.alwaysOriginal)
+		
+		let rect: CGRect = CGRect(x: 0, y: 0, width: image!.size.width, height: image!.size.height)
+		let cgImage: CGImage = image!.cgImage!.cropping(to: rect)!
+		image = UIImage(cgImage: cgImage, scale: (image?.size.width)! / 22, orientation: (image?.imageOrientation)!);		let button = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(revealMenu))
+		self.navigationItem.leftBarButtonItem = button
+		
+	}
+	func revealMenu(){
+		let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "sidemenuController")
+		
+			
+		present(vc, animated: true, completion: nil)
+		
+	}
 	override func viewDidLoad() {
+
+		
+		let customView = UIView(frame: CGRect(x:10, y:10, width:100, height:200))
+		displayNote.text = "Click a class to reveal more information"
+		displayNote.font = UIFont.systemFont(ofSize: 14.0)
+		customView.addSubview(displayNote)
+		diaryTable.tableFooterView = customView
 		
 		super.viewDidLoad()
 		
@@ -35,7 +61,6 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		getDiary()
 		// Do any additional setup after loading the view.
 	}
-	
 	func getDiary(){
 		let keychain = KeychainSwift()
 		let username = keychain.get("username")!
@@ -46,6 +71,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 				if response.result.value != nil{
 					self.classList.removeAll()
 					self.classNote.removeAll()
+					self.classInfo.removeAll()
 					let json = JSON(response.result.value!)
 					
 					for i in json["daymapDiaryClasses"]{
@@ -94,8 +120,6 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		let className = classList[indexPath.row]
 		
 		cell.name = className
-		cell.accessoryType = .disclosureIndicator
-		cell.accessoryView?.frame.origin.y = 0
 		
 		//Display Settings
 		cell.className.font = UIFont.boldSystemFont(ofSize: 17.0)
@@ -113,7 +137,8 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 
 		}
 		if classInfo.count > 0{
-			cell.teacher = classInfo[className]?["teacher"] as! String
+			let classRoom = classInfo[className]?["room"] as! String
+			cell.teacher = "\(classInfo[className]?["teacher"] as! String) in \(String(classRoom.characters.prefix(5)))"
 			cell.time = classInfo[className]?["time"] as! String
 			cell.presence = "Presence: \(classInfo[className]?["presence"] as! String)"
 		}
@@ -129,20 +154,20 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 	func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 		let selectedClass = classList[indexPath.row]
 		let selectedclassNote = classNote[selectedClass]
-		UserDefaults.standard.set(selectedClass, forKey: "selectedClass")
-		UserDefaults.standard.set(selectedclassNote!, forKey: "selectedclassNote")
-		let storyboard = UIStoryboard(name: "Main", bundle: nil)
-		let mainController = storyboard.instantiateViewController(withIdentifier: "displayNote") as UIViewController
-		//
+//		UserDefaults.standard.set(selectedClass, forKey: "selectedClass")
+//		UserDefaults.standard.set(selectedclassNote!, forKey: "selectedclassNote")
+//		let storyboard = UIStoryboard(name: "Main", bundle: nil)
+//		let mainController = storyboard.instantiateViewController(withIdentifier: "displayNote") as UIViewController
+//		//
+//		
+//		navigationController?.pushViewController(mainController, animated: true)
 		
-		navigationController?.pushViewController(mainController, animated: true)
-		
+		UIView.animate(withDuration: 0.3, animations: {self.displayNote.text = selectedclassNote!})
+		//displayNote.text = "Hello"
 		
 	}
-	
-	
-	
 }
+	
 class diaryList : UITableViewCell{
 	var name = ""
 	var note = ""
