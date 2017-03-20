@@ -9,6 +9,7 @@
 import UIKit
 import Alamofire
 import SwiftyJSON
+import SideMenu
 class announcementsController: UIViewController, UITableViewDataSource, UITableViewDelegate {
 
 	@IBOutlet weak var announcementsTable: UITableView!
@@ -18,6 +19,9 @@ class announcementsController: UIViewController, UITableViewDataSource, UITableV
 	var announcementList = UserDefaults.standard.object(forKey: "cachedannouncementsList") as? [String] ?? [String]()
 	
 	override func viewWillAppear(_ animated: Bool) {
+		SideMenuManager.menuFadeStatusBar = false
+		SideMenuManager.menuWidth = UIScreen.main.bounds.width / 2
+		
 		self.navigationItem.setHidesBackButton(true, animated:true)
 		var image = UIImage(named: "hamburger")?.withRenderingMode(.alwaysOriginal)
 		
@@ -44,6 +48,7 @@ class announcementsController: UIViewController, UITableViewDataSource, UITableV
     }
 	
 	func getAnnouncements(){
+		print("Starting")
 		Alamofire.request("https://da.gihs.sa.edu.au/stirling/announcements/get", method: .get)
 			.responseJSON { response in
 				let statusCode = response.response!.statusCode
@@ -60,6 +65,9 @@ class announcementsController: UIViewController, UITableViewDataSource, UITableV
 						self.announcements[title] = ["sender": sender, "time": time, "title": title, "content": content, "important": important]
 						
 					}
+					UserDefaults.standard.set(self.announcements, forKey: "cachedAnnouncements")
+					UserDefaults.standard.set(self.announcementList, forKey: "cachedannouncementsList")
+					
 				} else {
 					print("Error, moving on")
 				}
@@ -72,13 +80,20 @@ class announcementsController: UIViewController, UITableViewDataSource, UITableV
 		return announcements.count
 	}
 	func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-		let cell = announcementsTable.dequeueReusableCell(withIdentifier: "announcement", for: indexPath)
-		print(announcements)
+		let cell = announcementsTable.dequeueReusableCell(withIdentifier: "announcement", for: indexPath) as! announcementCell
+		//print(announcements)
 		if announcementList.count > 0{
 			let title = announcementList[indexPath.row]
-			cell.textLabel?.text = announcements[title]?["title"] as? String
+			print("Assigning \(title)")
+			cell.title = (announcements[title]?["title"] as? String)!
+			if announcements[title]?["important"] as? String == "true" {
+				cell.importance = true
+			} else {
+				cell.importance = false
+			}
 		}
-
+		
+		cell.update()
 
 		return cell
 	}
@@ -86,3 +101,19 @@ class announcementsController: UIViewController, UITableViewDataSource, UITableV
 	
 
 }
+
+
+class announcementCell: UITableViewCell{
+	var title = ""
+	var importance = false
+	@IBOutlet weak var announcementTitle: UILabel!
+	@IBOutlet weak var announcementImportance: UILabel!
+	
+	func update() {
+		announcementTitle.text = title
+		announcementImportance.isHidden = !importance
+	}
+
+
+}
+
