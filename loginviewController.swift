@@ -14,7 +14,7 @@ class loginviewController: UIViewController {
 
 	var mainStoryboard = UIViewController()
 	
-	@IBOutlet weak var cannotfindschoolAccount: UILabel!
+	@IBOutlet weak var cannotfindSchool: UILabel!
 	@IBOutlet weak var daymapUsername: UITextField!
 	
 	@IBOutlet weak var daymapPassword: UITextField!
@@ -22,10 +22,15 @@ class loginviewController: UIViewController {
 	
 	@IBOutlet weak var loginProcess: UIActivityIndicatorView!
 	
+	@IBOutlet weak var loginButton: UIButton!
+	
+	//@IBOutlet weak var signupButton: UIButton!
     override func viewDidLoad() {
         super.viewDidLoad()
-	
-
+		loginButton.backgroundColor = UIColor(red: 0.20, green: 0.59, blue: 0.86, alpha: 1)
+		daymapUsername.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.2)
+		daymapPassword.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.2)
+		//signupButton.backgroundColor = UIColor(red: 0.15, green: 0.77, blue: 0.38, alpha: 1)
 		if ((UserDefaults.standard.object(forKey: "isloggedIn") as? String) != nil){ //Returns True if userDefaults contains a key called isloggedIn
 			loggedIn()  // Calls loggedIn() function, which switces user to logged in page.
 			//Should move this to viewWillAppear(), button seems to work OK.
@@ -46,18 +51,16 @@ class loginviewController: UIViewController {
 			.authenticate(user: daymapUsername.text!, password: daymapPassword.text!) //Alamofire does auto NTLM
 			.responseString { response in
 				print("Got response code \(String(describing: response.response?.statusCode))")
-					 
-				//TODO: Update to support reponse codes in the 200 range, as opposed to just 200.
 				if response.response?.statusCode == 200{
 					self.credentialsCorrect()
 					self.loginProcess.stopAnimating()
 				}
 				else if response.response?.statusCode == 401{
-					self.cannotfindschoolAccount.text = "Incorrect Username or Password"
+					self.cannotfindSchool.text = "Incorrect Username or Password"
 					self.loginProcess.stopAnimating()
 				}
 				else if response.response?.statusCode != 200 && response.response?.statusCode != 401{
-					self.cannotfindschoolAccount.text = "Error, please try again later."
+					self.cannotfindSchool.text = "Error, please try again later."
 					self.loginProcess.stopAnimating()
 				}
 				
@@ -66,7 +69,7 @@ class loginviewController: UIViewController {
 	func loggedIn() {//Switches user to logged in state.
 		let storyboard = UIStoryboard(name: "Main", bundle: nil)
 		//let mainController = storyboard.instantiateViewController(withIdentifier: "tabcontrollerforMain") as UIViewController
-		let mainController = storyboard.instantiateViewController(withIdentifier: "tabcontrollerforMain") as UIViewController
+		let mainController = storyboard.instantiateViewController(withIdentifier: "initialView") as UIViewController
 		
 		let appDelegate =  UIApplication.shared.delegate as! AppDelegate
 		appDelegate.window?.rootViewController = mainController
