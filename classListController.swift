@@ -36,6 +36,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		let rect: CGRect = CGRect(x: 0, y: 0, width: image!.size.width, height: image!.size.height)
 		let cgImage: CGImage = image!.cgImage!.cropping(to: rect)!
 		
+		
 		image = UIImage(cgImage: cgImage, scale: (image?.size.width)! / 22, orientation: (image?.imageOrientation)!)
 		var button = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(revealMenu))
 		
