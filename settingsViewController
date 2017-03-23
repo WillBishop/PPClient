@@ -1,0 +1,67 @@
+//
+//  settingsViewController.swift
+//  PP
+//
+//  Created by Will Bishop on 19/3/17.
+//  Copyright © 2017 Will Bishop. All rights reserved.
+//
+
+import UIKit
+import SideMenu
+import KeychainSwift
+class settingsViewController: UIViewController {
+	
+	
+	override func viewWillAppear(_ animated: Bool) {
+		
+		Style.loadTheme()
+
+		navigationController?.navigationBar.barTintColor = Style.secionHeaderNavigationBarColor
+		SideMenuManager.menuFadeStatusBar = false
+		
+		self.navigationItem.setHidesBackButton(true, animated:true)
+		var image = UIImage(named: "hamburger")?.withRenderingMode(.alwaysOriginal)
+		
+		let rect: CGRect = CGRect(x: 0, y: 0, width: image!.size.width, height: image!.size.height)
+		let cgImage: CGImage = image!.cgImage!.cropping(to: rect)!
+		image = UIImage(cgImage: cgImage, scale: (image?.size.width)! / 22, orientation: (image?.imageOrientation)!);		let button = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(revealMenu))
+		self.navigationItem.leftBarButtonItem = button
+		
+		Style.loadTheme()
+		
+		let rightSwipe = UISwipeGestureRecognizer(target: self, action: #selector(revealMenu))
+		rightSwipe.direction = .right
+		view.addGestureRecognizer(rightSwipe)
+		
+	}
+	func revealMenu(){
+		let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "sidemenuController")
+		
+		
+		present(vc, animated: true, completion: nil)
+		
+	}
+	
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+           }
+
+	@IBAction func nightTheme(_ sender: Any) {
+		UserDefaults.standard.set("Dark Theme", forKey: "theme")
+	}
+	@IBAction func lightTheme(_ sender: Any) {
+		UserDefaults.standard.set("Light Theme", forKey: "theme")
+	}
+	@IBAction func logOut(){
+		let keychain = KeychainSwift()
+		keychain.clear() //Remove all stored credentials
+		UserDefaults.standard.removePersistentDomain(forName: Bundle.main.bundleIdentifier!) //Remove all cached school info.
+		UserDefaults.standard.synchronize()
+		let storyboard = UIStoryboard(name: "Login", bundle: nil)
+		let mainController = storyboard.instantiateViewController(withIdentifier: "loginView") as UIViewController
+		let appDelegate =  UIApplication.shared.delegate as! AppDelegate
+		appDelegate.window?.rootViewController = mainController
+	}
+	
+   }
