@@ -6,6 +6,8 @@ import SwiftyJSON
 import KeychainSwift
 import SideMenu
 
+
+
 class diaryController: UIViewController, UITableViewDataSource, UITableViewDelegate {
 	
 	
@@ -19,7 +21,6 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 	
 	let displayNote = UITextView(frame: CGRect(x:0, y:0, width:UIScreen.main.bounds.width - 10, height:300))
 	override func viewWillAppear(_ animated: Bool) {
-		let VC1 = self.storyboard!.instantiateViewController(withIdentifier: "classView") as! UIViewController
 		
 		
 
@@ -36,9 +37,8 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		let rect: CGRect = CGRect(x: 0, y: 0, width: image!.size.width, height: image!.size.height)
 		let cgImage: CGImage = image!.cgImage!.cropping(to: rect)!
 		
-		
 		image = UIImage(cgImage: cgImage, scale: (image?.size.width)! / 22, orientation: (image?.imageOrientation)!)
-		var button = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(revealMenu))
+		let button = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(revealMenu))
 		
 		self.navigationItem.leftBarButtonItem = button
 		
@@ -94,13 +94,20 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		getDiary()
 		// Do any additional setup after loading the view.
 	}
+	
 	func getDiary(){
+		
 		let keychain = KeychainSwift()
 		let username = keychain.get("username")!
+		//username = username.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlQueryAllowed)!
+		print(username)
 		let password = keychain.get("password")!
+		//var password = "@abc#".encodeUrl()
+		print(password)
 		print("Starting")
 		Alamofire.request("https://da.gihs.sa.edu.au/stirling/classes/daily/get?username=\(username)&password=\(password)", method: .get)
 			.responseJSON { response in
+				print(response.response?.statusCode ?? "Got nothing")
 				print("Done")
 				if response.result.value != nil{
 					self.classList.removeAll()
@@ -192,7 +199,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 	func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 		let selectedClass = classList[indexPath.row]
 		let selectedclassNote = classNote[selectedClass]
-		var cell: UITableViewCell = diaryTable.cellForRow(at: indexPath)!
+		let cell: UITableViewCell = diaryTable.cellForRow(at: indexPath)!
 		cell.contentView.backgroundColor = Style.sectionHeaderBackgroundColorHighlighted
 
 //		UserDefaults.standard.set(selectedClass, forKey: "selectedClass")
