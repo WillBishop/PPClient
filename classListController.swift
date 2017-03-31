@@ -25,7 +25,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		
 
 		print("Starting")
-		Style.loadTheme()
+		var themeName = Style.loadTheme()
 		SideMenuManager.menuFadeStatusBar = false
 		SideMenuManager.menuWidth = UIScreen.main.bounds.width / 2
 		diaryTable.backgroundColor = Style.sectionHeaderBackgroundColor
@@ -34,10 +34,14 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		//self.navigationItem.setHidesBackButton(true, animated:true)
 		var image = UIImage(named: "hamburger")?.withRenderingMode(.alwaysOriginal)
 		
+		if themeName == "Light"{image = UIImage(named: "hamburger")?.withRenderingMode(.alwaysOriginal)}
+		if themeName == "Dark"{image = UIImage(named: "hamburgerLight")?.withRenderingMode(.alwaysOriginal)}
+		
+		
 		let rect: CGRect = CGRect(x: 0, y: 0, width: image!.size.width, height: image!.size.height)
 		let cgImage: CGImage = image!.cgImage!.cropping(to: rect)!
 		
-		image = UIImage(cgImage: cgImage, scale: (image?.size.width)! / 22, orientation: (image?.imageOrientation)!)
+		//image = UIImage(cgImage: cgImage, scale: (image?.size.width)! / 22, orientation: (image?.imageOrientation)!)
 		let button = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(revealMenu))
 		
 		self.navigationItem.leftBarButtonItem = button
@@ -48,6 +52,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		let rightSwipe = UISwipeGestureRecognizer(target: self, action: #selector(revealMenu))
 		rightSwipe.direction = .right
 		view.addGestureRecognizer(rightSwipe)
+		
 		
 	}
 	
@@ -86,6 +91,8 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		let day = calender.component(.day, from: date as Date)
 		var sounds = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "11th", "12th", "14th", "15th", "16th", "17th", "18th", "19th", "20th", "21st", "22nd", "23rd", "24th", "25th", "26th", "27th", "28th", "29th", "30th", "30st"]
 		var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+		print(day)
+		print(month)
 		self.navigationController?.navigationBar.topItem?.title = "Diary - \(sounds[day - 1]) of \(months[month - 1])"
 		self.navigationController?.navigationBar.tintColor = Style.sectionHeaderTitleColor
 		
