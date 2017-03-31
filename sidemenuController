@@ -1,0 +1,45 @@
+//
+//  sidemenuController.swift
+//  PP
+//
+//  Created by Will Bishop on 26/3/17.
+//  Copyright © 2017 Will Bishop. All rights reserved.
+//
+
+import UIKit
+import SideMenu
+import Foundation
+
+class sidemenuController: UITableViewController {
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+       
+    }
+
+	
+
+	override func viewWillAppear(_ animated: Bool) {
+		print("Presented sidemenu")
+		tableView.backgroundColor = Style.tableheaderColor
+	}
+	override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+		cell.backgroundColor = Style.tablecellColor
+		var layer = cell.contentView.subviews.first
+		
+	}
+	
+	override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+		let returnedView = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.size.width, height: 25))
+		returnedView.backgroundColor = Style.tableheaderColor
+		
+		let label = UILabel(frame: CGRect(x: 10, y: 2, width: view.frame.size.width, height: 25))
+		label.text = self.tableView(tableView, titleForHeaderInSection: section)
+		label.textColor = Style.sectionHeaderTitleColor
+		returnedView.addSubview(label)
+		
+		return returnedView
+	}
+
+}
