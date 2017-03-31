@@ -1,3 +1,3 @@
-More Screenshots:https://imgur.com/a/SGGsx
+More Screenshots: https://imgur.com/a/SGGsx (Partially outdated)
 
-![Class View](https://i.imgur.com/CQhBcNK.png "Needs a facelift")
+![Class View](http://i.imgur.com/SJmsnPM.png "Looking better")
