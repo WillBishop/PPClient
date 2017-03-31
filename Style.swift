@@ -16,6 +16,8 @@ struct Style{
 	static var sectionHeaderBackgroundColorHighlighted = UIColor.gray
 	static var secionHeaderNavigationBarColor = UIColor.darkGray
 	static var sectionHeaderAlpha: Float = 1.0
+	static var tableheaderColor = UIColor.white
+	static var tablecellColor = UIColor.gray
 	
 	static func diarythemeLight(){
 		UserDefaults.standard.set("Light Theme", forKey: "theme")
@@ -25,6 +27,8 @@ struct Style{
 		secionHeaderNavigationBarColor = UIColor.white
 		sectionHeaderBackgroundColorHighlighted = UIColor.lightText
 		sectionHeaderAlpha = 0.8
+		tableheaderColor = UIColor(red: 0.97, green: 0.97, blue: 0.97, alpha: 1)
+		tablecellColor = UIColor.white
 	}
 	static func diarythemeNight(){
 		UserDefaults.standard.set("Dark Theme", forKey: "theme")
@@ -34,17 +38,22 @@ struct Style{
 		secionHeaderNavigationBarColor = UIColor.darkGray
 		sectionHeaderBackgroundColorHighlighted = UIColor.gray
 		sectionHeaderAlpha = 0.8
+		tableheaderColor = UIColor.darkGray
+		tablecellColor = UIColor.gray
 	}
 	static let availableThemes = ["Light Theme", "Dark Theme"]
-	static func loadTheme(){
+	static func loadTheme() -> String{
+		var setTheme = ""
 		let defaults = UserDefaults.standard
 		if let name = defaults.string(forKey: "theme"){
 			// Select the Theme
-			if name == "Light Theme"	{ diarythemeLight()	}
-			if name == "Dark Theme" 	{ diarythemeNight()	}
+			if name == "Light Theme"	{ diarythemeLight(); setTheme="Light"}
+			if name == "Dark Theme" 	{ diarythemeNight(); setTheme="Dark"}
 		}else{
 			defaults.set("Light Theme", forKey: "theme")
+			setTheme = "Light"
 			diarythemeLight()
 		}
+		return setTheme
 	}
 }
