@@ -99,10 +99,9 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 	}
 	override func viewDidAppear(_ animated: Bool) {
 		
-		for _ in 1 ... 1000{
-			print("Scheduling")
-			registerLocal("Physics", 5)
-		}
+		print("Scheduling")
+		registerLocal("Physics", 5)
+		
 	}
 	func registerLocal(_ className:String, _ classTime:Double) { //In the future, each class will have a time associated with it, and then can have a weekly schedule from that
 		let options: UNAuthorizationOptions = [.alert, .sound]
