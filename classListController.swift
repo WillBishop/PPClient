@@ -98,12 +98,24 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		// Do any additional setup after loading the view.
 	}
 	override func viewDidAppear(_ animated: Bool) {
-		
-		print("Scheduling")
-		registerLocal("Physics", 5)
+		registerLocal()
 		
 	}
-	func registerLocal(_ className:String, _ classTime:Double) { //In the future, each class will have a time associated with it, and then can have a weekly schedule from that
+	
+	func dateGenerator(_ hour:Int, _ minute:Int) -> DateComponents{
+		let calendar = Calendar.autoupdatingCurrent
+		let components = calendar.dateComponents([.year, .day, .month], from: Date())
+		var date = DateComponents()
+		
+		date.year = components.year
+		date.month = components.month
+		date.day = components.day
+		date.hour = hour
+		date.minute = minute
+		return date
+		
+	}
+	func registerLocal() { //In the future, each class will have a time associated with it, and then can have a weekly schedule from that
 		let options: UNAuthorizationOptions = [.alert, .sound]
 		let center = UNUserNotificationCenter.current()
 		center.requestAuthorization(options: options) {
@@ -118,21 +130,27 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 				//TODO: Request permission again
 			}
 		}
+		
+	}
+	
+	func scheduleNotification(_ className:String, _ classTime:DateComponents){
+		let center = UNUserNotificationCenter.current()
 		let notification = UNMutableNotificationContent()
 		notification.title = className
 		notification.body = "Class in 10 minutes"
 		notification.sound = UNNotificationSound.default()
 		
-		let trigger = UNTimeIntervalNotificationTrigger(timeInterval: classTime, repeats: false)
+		//var trigger = UNTimeIntervalNotificationTrigger(timeInterval: classTime, repeats: false)
+		var trigger = UNCalendarNotificationTrigger(dateMatching: classTime, repeats: false)
+		print("Scheduling for \(classTime)")
 		
 		let identifier = "PPClassNotifications"
 		
-		let request = UNNotificationRequest(identifier: identifier,
-		                                    content: notification, trigger: trigger)
+		let request = UNNotificationRequest(identifier: identifier, content: notification, trigger: trigger)
 		center.add(request)
 
-		
 	}
+	
 	func getDiary(){
 		
 		let keychain = KeychainSwift()
@@ -169,9 +187,14 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 						} else {
 							attendance = "✘"
 						}
-						self.classInfo[name] = ["time": "\(String(describing: i.1["startTime"]))-\(String(describing: i.1["endTime"]))", "room": String(describing: i.1["roomName"]), "teacher":   String(describing: (i.1["teacherName"])), "presence": attendance]
+						let numericalStart = String(describing: i.1["startTime"]).replacingOccurrences(of: " AM", with: "").replacingOccurrences(of: " PM", with: "")
 						
-						print(self.classInfo)
+						var numericalstartTime = numericalStart.components(separatedBy: ":")
+						
+						
+						self.classInfo[name] = ["time": "\(String(describing: i.1["startTime"]))-\(String(describing: i.1["endTime"]))", "room": String(describing: i.1["roomName"]), "teacher":   String(describing: (i.1["teacherName"])), "presence": attendance, "numericalstartHour": numericalstartTime[0], "numericalstartMinute": numericalstartTime[1]]
+						
+						//print(self.classInfo)
 					}
 					
 					UserDefaults.standard.set(self.classList, forKey: "cachedClasses")
@@ -224,6 +247,16 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 			cell.teacher = "\(classInfo[className]?["teacher"] as! String) in \(String(classRoom.characters.prefix(5)))"
 			cell.time = classInfo[className]?["time"] as! String
 			cell.presence = "Presence: \(classInfo[className]?["presence"] as! String)"
+			
+			let classHour = classInfo[className]?["numericalstartHour"] as! String
+			let classMinute = classInfo[className]?["numericalstartMinute"] as! String
+			
+			print(Int(classHour)!)
+			print(Int(classMinute)!)
+			
+			let classstartTime = dateGenerator(Int(classHour)!, Int(classMinute)!)
+			scheduleNotification(className, classstartTime)
+			
 		}
 		
 		cell.update()
