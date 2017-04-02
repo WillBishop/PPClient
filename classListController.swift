@@ -137,7 +137,6 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		let center = UNUserNotificationCenter.current()
 		let notification = UNMutableNotificationContent()
 		notification.title = className
-		notification.body = "Class in 10 minutes"
 		notification.sound = UNNotificationSound.default()
 		
 		//var trigger = UNTimeIntervalNotificationTrigger(timeInterval: classTime, repeats: false)
@@ -190,6 +189,14 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 						let numericalStart = String(describing: i.1["startTime"]).replacingOccurrences(of: " AM", with: "").replacingOccurrences(of: " PM", with: "")
 						
 						var numericalstartTime = numericalStart.components(separatedBy: ":")
+						
+						if (String(describing: i.1["startTime"]).range(of: "PM") != nil){
+							if Int(numericalstartTime[0])! != 12{
+								numericalstartTime[0] = String(Int(numericalstartTime[0])! + 12)
+							}
+							
+						}
+						
 						
 						
 						self.classInfo[name] = ["time": "\(String(describing: i.1["startTime"]))-\(String(describing: i.1["endTime"]))", "room": String(describing: i.1["roomName"]), "teacher":   String(describing: (i.1["teacherName"])), "presence": attendance, "numericalstartHour": numericalstartTime[0], "numericalstartMinute": numericalstartTime[1]]
