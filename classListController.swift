@@ -5,7 +5,7 @@ import Alamofire
 import SwiftyJSON
 import KeychainSwift
 import SideMenu
-
+import UserNotifications
 
 
 class diaryController: UIViewController, UITableViewDataSource, UITableViewDelegate {
@@ -25,7 +25,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		
 
 		print("Starting")
-		var themeName = Style.loadTheme()
+		let themeName = Style.loadTheme()
 		SideMenuManager.menuFadeStatusBar = false
 		SideMenuManager.menuWidth = UIScreen.main.bounds.width / 2
 		diaryTable.backgroundColor = Style.sectionHeaderBackgroundColor
@@ -36,10 +36,6 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		
 		if themeName == "Light"{image = UIImage(named: "hamburger")?.withRenderingMode(.alwaysOriginal)}
 		if themeName == "Dark"{image = UIImage(named: "hamburgerLight")?.withRenderingMode(.alwaysOriginal)}
-		
-		
-		let rect: CGRect = CGRect(x: 0, y: 0, width: image!.size.width, height: image!.size.height)
-		let cgImage: CGImage = image!.cgImage!.cropping(to: rect)!
 		
 		//image = UIImage(cgImage: cgImage, scale: (image?.size.width)! / 22, orientation: (image?.imageOrientation)!)
 		let button = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(revealMenu))
@@ -101,7 +97,43 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		getDiary()
 		// Do any additional setup after loading the view.
 	}
-	
+	override func viewDidAppear(_ animated: Bool) {
+		
+		for _ in 1 ... 1000{
+			print("Scheduling")
+			registerLocal("Physics", 5)
+		}
+	}
+	func registerLocal(_ className:String, _ classTime:Double) { //In the future, each class will have a time associated with it, and then can have a weekly schedule from that
+		let options: UNAuthorizationOptions = [.alert, .sound]
+		let center = UNUserNotificationCenter.current()
+		center.requestAuthorization(options: options) {
+			(granted, error) in
+			if !granted {
+				print("Something went wrong")
+			}
+		}
+		center.getNotificationSettings { (set) in
+			if set.authorizationStatus != .authorized{
+				print("User disabled notifications")
+				//TODO: Request permission again
+			}
+		}
+		let notification = UNMutableNotificationContent()
+		notification.title = className
+		notification.body = "Class in 10 minutes"
+		notification.sound = UNNotificationSound.default()
+		
+		let trigger = UNTimeIntervalNotificationTrigger(timeInterval: classTime, repeats: false)
+		
+		let identifier = "PPClassNotifications"
+		
+		let request = UNNotificationRequest(identifier: identifier,
+		                                    content: notification, trigger: trigger)
+		center.add(request)
+
+		
+	}
 	func getDiary(){
 		
 		let keychain = KeychainSwift()
