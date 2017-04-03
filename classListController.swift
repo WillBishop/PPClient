@@ -21,8 +21,9 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 	
 	let displayNote = UITextView(frame: CGRect(x:0, y:0, width:UIScreen.main.bounds.width - 10, height:300))
 	override func viewWillAppear(_ animated: Bool) {
-		
-		
+
+
+
 
 		print("Starting")
 		let themeName = Style.loadTheme()
@@ -128,6 +129,8 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 			if set.authorizationStatus != .authorized{
 				print("User disabled notifications")
 				//TODO: Request permission again
+			} else {
+				print("Notifications Enabled")
 			}
 		}
 		
@@ -137,13 +140,14 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		let center = UNUserNotificationCenter.current()
 		let notification = UNMutableNotificationContent()
 		notification.title = className
+		notification.body = "Class Now"
 		notification.sound = UNNotificationSound.default()
 		
 		//var trigger = UNTimeIntervalNotificationTrigger(timeInterval: classTime, repeats: false)
 		var trigger = UNCalendarNotificationTrigger(dateMatching: classTime, repeats: false)
 		print("Scheduling for \(classTime)")
 		
-		let identifier = "PPClassNotifications"
+		let identifier = className
 		
 		let request = UNNotificationRequest(identifier: identifier, content: notification, trigger: trigger)
 		center.add(request)
@@ -250,6 +254,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 
 		}
 		if classInfo.count > 0{
+			print("Scheduling")
 			let classRoom = classInfo[className]?["room"] as! String
 			cell.teacher = "\(classInfo[className]?["teacher"] as! String) in \(String(classRoom.characters.prefix(5)))"
 			cell.time = classInfo[className]?["time"] as! String
