@@ -57,7 +57,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 	func revealMenu(){
 		let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "sidemenuController")
 		
-			
+	
 		present(vc, animated: true, completion: nil)
 		
 	}
@@ -88,8 +88,8 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		let day = calender.component(.day, from: date as Date)
 		var sounds = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "11th", "12th", "14th", "15th", "16th", "17th", "18th", "19th", "20th", "21st", "22nd", "23rd", "24th", "25th", "26th", "27th", "28th", "29th", "30th", "30st"]
 		var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-		print(day)
-		print(month)
+		//print(day)
+		//print(month)
 		self.navigationController?.navigationBar.topItem?.title = "Diary - \(sounds[day - 1]) of \(months[month - 1])"
 		self.navigationController?.navigationBar.tintColor = Style.sectionHeaderTitleColor
 		
@@ -136,16 +136,16 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		
 	}
 	
-	func scheduleNotification(_ className:String, _ classTime:DateComponents){
+	func scheduleNotification(_ className:String, _ classTeacher:String, _ classRoom:String,_ classTime:DateComponents){
 		let center = UNUserNotificationCenter.current()
 		let notification = UNMutableNotificationContent()
 		notification.title = className
-		notification.body = "Class Now"
+		notification.body = "with \(classTeacher) in \(classRoom)"
 		notification.sound = UNNotificationSound.default()
 		
 		//var trigger = UNTimeIntervalNotificationTrigger(timeInterval: classTime, repeats: false)
 		var trigger = UNCalendarNotificationTrigger(dateMatching: classTime, repeats: false)
-		print("Scheduling for \(classTime)")
+		//print("Scheduling for \(classTime)")
 		
 		let identifier = className
 		
@@ -159,11 +159,11 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		let keychain = KeychainSwift()
 		let username = keychain.get("username")!
 		//username = username.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlQueryAllowed)!
-		print(username)
+		//print(username)
 		let password = keychain.get("password")!
 		//var password = "@abc#".encodeUrl()
-		print(password)
-		print("Starting")
+		//print(password)
+		//print("Starting")
 		Alamofire.request("https://da.gihs.sa.edu.au/stirling/classes/daily/get?username=\(username)&password=\(password)", method: .get)
 			.responseJSON { response in
 				print(response.response?.statusCode ?? "Got nothing")
@@ -201,10 +201,19 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 							
 						}
 						
+
+						
 						
 						
 						self.classInfo[name] = ["time": "\(String(describing: i.1["startTime"]))-\(String(describing: i.1["endTime"]))", "room": String(describing: i.1["roomName"]), "teacher":   String(describing: (i.1["teacherName"])), "presence": attendance, "numericalstartHour": numericalstartTime[0], "numericalstartMinute": numericalstartTime[1]]
 						
+						let classRoom = self.classInfo[name]?["room"] as! String
+						let classHour = self.classInfo[name]?["numericalstartHour"] as! String
+						let classMinute = self.classInfo[name]?["numericalstartMinute"] as! String
+						let teacher = "\(self.classInfo[name]?["teacher"] as! String) in \(String(classRoom.characters.prefix(5)))"
+						
+						let classstartTime = self.dateGenerator(Int(classHour)!, Int(classMinute)!)
+						self.scheduleNotification(name, teacher, classRoom, classstartTime)
 						//print(self.classInfo)
 					}
 					
@@ -254,20 +263,20 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 
 		}
 		if classInfo.count > 0{
-			print("Scheduling")
+			//print("Scheduling")
+			
 			let classRoom = classInfo[className]?["room"] as! String
-			cell.teacher = "\(classInfo[className]?["teacher"] as! String) in \(String(classRoom.characters.prefix(5)))"
+			let teacher = "\(classInfo[className]?["teacher"] as! String) in \(String(classRoom.characters.prefix(5)))"
+			cell.teacher = teacher
 			cell.time = classInfo[className]?["time"] as! String
 			cell.presence = "Presence: \(classInfo[className]?["presence"] as! String)"
 			
 			let classHour = classInfo[className]?["numericalstartHour"] as! String
 			let classMinute = classInfo[className]?["numericalstartMinute"] as! String
 			
-			print(Int(classHour)!)
-			print(Int(classMinute)!)
+			//print(Int(classHour)!)
+			//print(Int(classMinute)!)
 			
-			let classstartTime = dateGenerator(Int(classHour)!, Int(classMinute)!)
-			scheduleNotification(className, classstartTime)
 			
 		}
 		
