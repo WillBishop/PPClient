@@ -15,18 +15,18 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 	
 	
 	
-	var classList = UserDefaults.standard.object(forKey: "cachedClasses") as? [String] ?? [String]()
+	var classList = UserDefaults.standard.object(forKey: "cachedClasses") as? [String] ?? [String]() //Grab all the cached data
 	var classNote = UserDefaults.standard.object(forKey: "cachedNotes") as? [String: String?] ?? [String: String!]()
 	var classInfo = UserDefaults.standard.object(forKey: "cachedInfo") as? [String: [String: Any]] ?? [String: [String: Any]]()
 	
-	let displayNote = UITextView(frame: CGRect(x:0, y:0, width:UIScreen.main.bounds.width - 10, height:300))
+	let displayNote = UITextView(frame: CGRect(x:0, y:0, width:UIScreen.main.bounds.width - 10, height:300)) //text view to be footer to table
 	override func viewWillAppear(_ animated: Bool) {
 
 
 
 
 		print("Starting")
-		let themeName = Style.loadTheme()
+		_ = Style.loadTheme() //loadTheme() returns a string, but I do not use it at this moment
 		diaryTable.backgroundColor = Style.sectionHeaderBackgroundColor
 		
 		//self.navigationItem.setHidesBackButton(true, animated:true)
@@ -34,7 +34,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		displayNote.backgroundColor = Style.sectionHeaderBackgroundColor
 		displayNote.textColor = Style.sectionHeaderTitleColor
 
-		let rightSwipe = UISwipeGestureRecognizer(target: self, action: #selector(revealMenu))
+		let rightSwipe = UISwipeGestureRecognizer(target: self, action: #selector(revealMenu)) //Gesture to bring out side menu (swipe from left to right)
 		rightSwipe.direction = .right
 		view.addGestureRecognizer(rightSwipe)
 		
@@ -50,21 +50,18 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		
 	}
 	override func viewDidLoad() {
-		
-		
-		
-		
+		super.viewDidLoad()
 		displayNote.text = "Click a class to reveal more information"
 		displayNote.font = UIFont.systemFont(ofSize: 14.0)
-		displayNote.isEditable = false
+		displayNote.isEditable = false //Theoretically allows the user to highlight and copy, but not actually edit the text (client-side)
 		
 		let customView = UIView(frame: CGRect(x:10, y:10, width:100, height:200))
 
 		customView.addSubview(displayNote)
 		
-		diaryTable.tableFooterView = customView
+		diaryTable.tableFooterView = customView //Not only hides unused cells, but lets the note view scale with the amount of classes
 		
-		super.viewDidLoad()
+		
 		
 	
 		
@@ -76,10 +73,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		let day = calender.component(.day, from: date as Date)
 		var sounds = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "11th", "12th", "14th", "15th", "16th", "17th", "18th", "19th", "20th", "21st", "22nd", "23rd", "24th", "25th", "26th", "27th", "28th", "29th", "30th", "30st"]
 		var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-		//print(day)
-		//print(month)
 		self.navigationController?.navigationBar.topItem?.title = "Diary - \(sounds[day - 1]) of \(months[month - 1])"
-		//self.navigationController?.navigationBar.tintColor = Style.sectionHeaderTitleColor
 		
 		diaryTable.delegate = self
 		diaryTable.dataSource = self
@@ -87,7 +81,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		// Do any additional setup after loading the view.
 	}
 	override func viewDidAppear(_ animated: Bool) {
-		registerLocal()
+		registerLocal() //Register to allow local notifications
 		
 	}
 	
@@ -106,7 +100,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		
 	}
 	func registerLocal() { //In the future, each class will have a time associated with it, and then can have a weekly schedule from that
-		let options: UNAuthorizationOptions = [.alert, .sound]
+		let options: UNAuthorizationOptions = [.alert, .sound] //Badges is not yet required
 		let center = UNUserNotificationCenter.current()
 		center.requestAuthorization(options: options) {
 			(granted, error) in
@@ -129,11 +123,10 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		let center = UNUserNotificationCenter.current()
 		let notification = UNMutableNotificationContent()
 		notification.title = className
-		notification.body = "with \(classTeacher) in \(classRoom)"
+		notification.body = "with \(classTeacher)" //teacher encompasses the room as well
 		notification.sound = UNNotificationSound.default()
 		
-		//var trigger = UNTimeIntervalNotificationTrigger(timeInterval: classTime, repeats: false)
-		var trigger = UNCalendarNotificationTrigger(dateMatching: classTime, repeats: false)
+		let trigger = UNCalendarNotificationTrigger(dateMatching: classTime, repeats: false)
 		//print("Scheduling for \(classTime)")
 		
 		let identifier = className
@@ -158,7 +151,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 				print(response.response?.statusCode ?? "Got nothing")
 				print("Done")
 				if response.result.value != nil{
-					self.classList.removeAll()
+					self.classList.removeAll() //Remove all existing data to prevent overlapping data
 					self.classNote.removeAll()
 					self.classInfo.removeAll()
 					let json = JSON(response.result.value!)
@@ -236,7 +229,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		cell.name = className
 		
 		//Display Settings
-		cell.className.font = UIFont.boldSystemFont(ofSize: 17.0)
+		cell.className.font = UIFont.boldSystemFont(ofSize: 17.0) //All Style.* in the file ensures everything conforms to the selected theme
 		cell.className.textColor = Style.sectionHeaderTitleColor
 		
 		cell.classNote.lineBreakMode = .byWordWrapping
@@ -260,8 +253,6 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 			cell.time = classInfo[className]?["time"] as! String
 			cell.presence = "Presence: \(classInfo[className]?["presence"] as! String)"
 			
-			let classHour = classInfo[className]?["numericalstartHour"] as! String
-			let classMinute = classInfo[className]?["numericalstartMinute"] as! String
 			
 			//print(Int(classHour)!)
 			//print(Int(classMinute)!)
@@ -281,18 +272,8 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		let selectedClass = classList[indexPath.row]
 		let selectedclassNote = classNote[selectedClass]
 		let cell: UITableViewCell = diaryTable.cellForRow(at: indexPath)!
-		cell.contentView.backgroundColor = Style.sectionHeaderBackgroundColorHighlighted
-
-//		UserDefaults.standard.set(selectedClass, forKey: "selectedClass")
-//		UserDefaults.standard.set(selectedclassNote!, forKey: "selectedclassNote")
-//		let storyboard = UIStoryboard(name: "Main", bundle: nil)
-//		let mainController = storyboard.instantiateViewController(withIdentifier: "displayNote") as UIViewController
-//		//
-//		
-//		navigationController?.pushViewController(mainController, animated: true)
-		
+		cell.contentView.backgroundColor = Style.sectionHeaderBackgroundColorHighlighted //Allow custom selected colours
 		UIView.animate(withDuration: 0.3, animations: {self.displayNote.text = selectedclassNote!})
-		//displayNote.text = "Hello"
 		
 	}
 }
@@ -312,7 +293,6 @@ class diaryList : UITableViewCell{
 	
 	
 	
-	//TODO: Add other class info, such as teachers, presence, time etc
 	func update() {
 		classNote.isHidden = true
 		className.text = name
