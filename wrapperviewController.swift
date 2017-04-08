@@ -20,10 +20,13 @@ class wrapperviewController: UIViewController {
 	@IBOutlet weak var embeddedView: UIView!
 	
 	override func viewWillAppear(_ animated: Bool) {
+		_ = Style.loadTheme()
+		
 		if selectedView != ""{
 			print("Selected \(selectedView)")
 			
 			self.navigationItem.title = selectedView //Changed top title to reflect seleted view
+			self.navigationController?.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName: Style.sectionHeaderTitleColor]
 			let newView = self.storyboard?.instantiateViewController(withIdentifier: selectedView) //Find the view controller
 			newView?.view.frame = embeddedView.bounds //Change the view controllers frame to fit the embedded frame
 			embeddedView.addSubview((newView?.view)!) //Add the new view to the UIView
@@ -33,7 +36,9 @@ class wrapperviewController: UIViewController {
 			
 
 		}else{ //If the app has just been launched
-			let newView = self.storyboard?.instantiateViewController(withIdentifier: "Dayplan")
+			self.navigationItem.title = "Diary"
+			self.navigationController?.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName: Style.sectionHeaderTitleColor]
+			let newView = self.storyboard?.instantiateViewController(withIdentifier: "Diary")
 			newView?.view.frame = embeddedView.bounds
 			embeddedView.addSubview((newView?.view)!)
 			addChildViewController(newView!)
@@ -58,24 +63,15 @@ class wrapperviewController: UIViewController {
 	}
 	func revealMenu(){
 		let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "sidemenuController")
-		
-		
 		present(vc, animated: true, completion: nil)
 		
 	}
     override func viewDidLoad() {
-		
-		
         super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    
-
-
 }
