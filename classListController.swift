@@ -27,21 +27,9 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 
 		print("Starting")
 		let themeName = Style.loadTheme()
-		SideMenuManager.menuFadeStatusBar = false
-		SideMenuManager.menuWidth = UIScreen.main.bounds.width / 2
 		diaryTable.backgroundColor = Style.sectionHeaderBackgroundColor
-		navigationController?.navigationBar.barTintColor = Style.secionHeaderNavigationBarColor
 		
 		//self.navigationItem.setHidesBackButton(true, animated:true)
-		var image = UIImage(named: "hamburger")?.withRenderingMode(.alwaysOriginal)
-		
-		if themeName == "Light"{image = UIImage(named: "hamburger")?.withRenderingMode(.alwaysOriginal)}
-		if themeName == "Dark"{image = UIImage(named: "hamburgerLight")?.withRenderingMode(.alwaysOriginal)}
-		
-		//image = UIImage(cgImage: cgImage, scale: (image?.size.width)! / 22, orientation: (image?.imageOrientation)!)
-		let button = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(revealMenu))
-		
-		self.navigationItem.leftBarButtonItem = button
 		
 		displayNote.backgroundColor = Style.sectionHeaderBackgroundColor
 		displayNote.textColor = Style.sectionHeaderTitleColor
@@ -91,7 +79,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		//print(day)
 		//print(month)
 		self.navigationController?.navigationBar.topItem?.title = "Diary - \(sounds[day - 1]) of \(months[month - 1])"
-		self.navigationController?.navigationBar.tintColor = Style.sectionHeaderTitleColor
+		//self.navigationController?.navigationBar.tintColor = Style.sectionHeaderTitleColor
 		
 		diaryTable.delegate = self
 		diaryTable.dataSource = self
@@ -113,6 +101,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		date.day = components.day
 		date.hour = hour
 		date.minute = minute
+		
 		return date
 		
 	}
