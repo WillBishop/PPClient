@@ -21,14 +21,16 @@ class announcementsController: UIViewController, UITableViewDataSource, UITableV
 	override func viewWillAppear(_ animated: Bool) {
 		SideMenuManager.menuFadeStatusBar = false
 		SideMenuManager.menuWidth = UIScreen.main.bounds.width / 2
+		announcementsTable.backgroundColor = Style.sectionHeaderBackgroundColor
+
+		let rightSwipe = UISwipeGestureRecognizer(target: self, action: #selector(revealMenu))
+		rightSwipe.direction = .right
+		view.addGestureRecognizer(rightSwipe)
+
+		var themeName = Style.loadTheme()
 		
-		self.navigationItem.setHidesBackButton(true, animated:true)
-		var image = UIImage(named: "hamburger")?.withRenderingMode(.alwaysOriginal)
-		
-		let rect: CGRect = CGRect(x: 0, y: 0, width: image!.size.width, height: image!.size.height)
-		let cgImage: CGImage = image!.cgImage!.cropping(to: rect)!
-		image = UIImage(cgImage: cgImage, scale: (image?.size.width)! / 22, orientation: (image?.imageOrientation)!);		let button = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(revealMenu))
-		self.navigationItem.leftBarButtonItem = button
+		announcementsTable.reloadData()
+	
 		
 	}
 	func revealMenu(){
@@ -82,6 +84,9 @@ class announcementsController: UIViewController, UITableViewDataSource, UITableV
 	func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 		let cell = announcementsTable.dequeueReusableCell(withIdentifier: "announcement", for: indexPath) as! announcementCell
 		//print(announcements)
+		cell.announcementTitle.textColor = Style.sectionHeaderTitleColor
+		cell.backgroundColor = Style.sectionHeaderBackgroundColor
+		
 		if announcementList.count > 0{
 			let title = announcementList[indexPath.row]
 			print("Assigning \(title)")
@@ -116,4 +121,3 @@ class announcementCell: UITableViewCell{
 
 
 }
-
