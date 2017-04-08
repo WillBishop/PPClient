@@ -19,23 +19,10 @@ class homeworkController: UIViewController, UITableViewDelegate, UITableViewData
 	@IBOutlet weak var homeworkTable: UITableView!
 	
 	override func viewWillAppear(_ animated: Bool) {
-		var themeName = Style.loadTheme()
+		let themeName = Style.loadTheme()
 		SideMenuManager.menuFadeStatusBar = false
 		SideMenuManager.menuWidth = UIScreen.main.bounds.width / 2
 		homeworkTable.backgroundColor = Style.sectionHeaderBackgroundColor
-		navigationController?.navigationBar.barTintColor = Style.secionHeaderNavigationBarColor
-		
-		//self.navigationItem.setHidesBackButton(true, animated:true)
-		var image = UIImage(named: "hamburger")?.withRenderingMode(.alwaysOriginal)
-		
-		if themeName == "Light"{image = UIImage(named: "hamburger")?.withRenderingMode(.alwaysOriginal)}
-		if themeName == "Dark"{image = UIImage(named: "hamburgerLight")?.withRenderingMode(.alwaysOriginal)}
-		
-		
-		let button = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(revealMenu))
-		
-		self.navigationItem.leftBarButtonItem = button
-		
 		displayHomework.backgroundColor = Style.sectionHeaderBackgroundColor
 		displayHomework.textColor = Style.sectionHeaderTitleColor
 		
