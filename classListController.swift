@@ -4,7 +4,6 @@ import UIKit
 import Alamofire
 import SwiftyJSON
 import KeychainSwift
-import SideMenu
 import UserNotifications
 
 
@@ -19,10 +18,8 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 	var classNote = UserDefaults.standard.object(forKey: "cachedNotes") as? [String: String?] ?? [String: String!]()
 	var classInfo = UserDefaults.standard.object(forKey: "cachedInfo") as? [String: [String: Any]] ?? [String: [String: Any]]()
 	
-	let displayNote = UITextView(frame: CGRect(x:0, y:0, width:UIScreen.main.bounds.width - 10, height:300)) //text view to be footer to table
+	//let displayNote = UITextView(frame: CGRect(x:0, y:0, width:UIScreen.main.bounds.width - 10, height:300)) //text view to be footer to table
 	override func viewWillAppear(_ animated: Bool) {
-
-
 
 
 		print("Starting")
@@ -31,8 +28,8 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		
 		//self.navigationItem.setHidesBackButton(true, animated:true)
 		
-		displayNote.backgroundColor = Style.sectionHeaderBackgroundColor
-		displayNote.textColor = Style.sectionHeaderTitleColor
+		//displayNote.backgroundColor = Style.sectionHeaderBackgroundColor
+		//displayNote.textColor = Style.sectionHeaderTitleColor
 
 		let rightSwipe = UISwipeGestureRecognizer(target: self, action: #selector(revealMenu)) //Gesture to bring out side menu (swipe from left to right)
 		rightSwipe.direction = .right
@@ -51,15 +48,15 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 	}
 	override func viewDidLoad() {
 		super.viewDidLoad()
-		displayNote.text = "Click a class to reveal more information"
-		displayNote.font = UIFont.systemFont(ofSize: 14.0)
-		displayNote.isEditable = false //Theoretically allows the user to highlight and copy, but not actually edit the text (client-side)
+//		displayNote.text = "Click a class to reveal more information"
+//		displayNote.font = UIFont.systemFont(ofSize: 14.0)
+//		displayNote.isEditable = false //Theoretically allows the user to highlight and copy, but not actually edit the text (client-side)
+//		
+//		let customView = UIView(frame: CGRect(x:10, y:10, width:100, height:200))
+//
+//		customView.addSubview(displayNote)
 		
-		let customView = UIView(frame: CGRect(x:10, y:10, width:100, height:200))
-
-		customView.addSubview(displayNote)
-		
-		diaryTable.tableFooterView = customView //Not only hides unused cells, but lets the note view scale with the amount of classes
+		//diaryTable.tableFooterView = customView //Not only hides unused cells, but lets the note view scale with the amount of classes
 		
 		
 		
@@ -77,7 +74,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		
 		diaryTable.delegate = self
 		diaryTable.dataSource = self
-		getDiary()
+		//getDiary()
 		// Do any additional setup after loading the view.
 	}
 	override func viewDidAppear(_ animated: Bool) {
@@ -187,7 +184,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 						
 						
 						
-						self.classInfo[name] = ["time": "\(String(describing: i.1["startTime"]))-\(String(describing: i.1["endTime"]))", "room": String(describing: i.1["roomName"]), "teacher":   String(describing: (i.1["teacherName"])), "presence": attendance, "numericalstartHour": numericalstartTime[0], "numericalstartMinute": numericalstartTime[1]]
+						self.classInfo[name] = ["time": String(describing: i.1["startTime"]), "room": String(describing: i.1["roomName"]), "teacher":   String(describing: (i.1["teacherName"])), "presence": attendance, "numericalstartHour": numericalstartTime[0], "numericalstartMinute": numericalstartTime[1], "homework": String(describing: (i.1["homework"]))]
 						
 						let classRoom = self.classInfo[name]?["room"] as! String
 						let classHour = self.classInfo[name]?["numericalstartHour"] as! String
@@ -226,38 +223,50 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		cell.backgroundColor = Style.sectionHeaderBackgroundColor
 		let className = classList[indexPath.row]
 		
-		cell.name = className
+		let classAttributed = NSAttributedString(string: className.replacingOccurrences(of: "10 ", with: ""), attributes: [NSForegroundColorAttributeName: Style.classnameColor])
+			
+		cell.name = classAttributed//Year 10 is hardcoded, FIX!
 		
 		//Display Settings
 		cell.className.font = UIFont.boldSystemFont(ofSize: 17.0) //All Style.* in the file ensures everything conforms to the selected theme
 		cell.className.textColor = Style.sectionHeaderTitleColor
 		
-		cell.classNote.lineBreakMode = .byWordWrapping
-		cell.classNote.numberOfLines = 2
-		cell.classNote.frame.size.width = 350.0
-		cell.classNote.sizeToFit()
-		//
 		
+//		if classNote[classList[indexPath.row]] != nil{
+//			cell.note = (classNote[className])!!
+//
+//
+//		}
+		let style = NSMutableParagraphStyle()
+		style.lineSpacing = 0
 		
-		if classNote[classList[indexPath.row]] != nil{
-			cell.note = (classNote[className])!!
-
-
-		}
+		let attributes = [NSParagraphStyleAttributeName: style, NSForegroundColorAttributeName: UIColor.lightGray]
+		let filltext = NSAttributedString(string: classNote[className]!!, attributes: attributes)
+		
+		cell.note = filltext
+		cell.classNote.textContainer.maximumNumberOfLines = 3
+		cell.classNote.textContainer.lineBreakMode = .byTruncatingTail
+		
+//		cell.classNote.text = classNote[className] as! String
+//		(cell.classNote.font?.lineHeight)! * 5
+		
 		if classInfo.count > 0{
 			//print("Scheduling")
 			
-			let classRoom = classInfo[className]?["room"] as! String
-			let teacher = "\(classInfo[className]?["teacher"] as! String) in \(String(classRoom.characters.prefix(5)))"
-			cell.teacher = teacher
-			cell.time = classInfo[className]?["time"] as! String
-			cell.presence = "Presence: \(classInfo[className]?["presence"] as! String)"
+			var classRoom = classInfo[className]?["room"] as! String
+			classRoom = String(classRoom.characters.prefix(5))
+			let teacher = (classInfo[className]?["teacher"] as! String)
+			var seperated = teacher.components(separatedBy: " ")
+			
+			let lastnameLetter = String((seperated[1].characters.first!))
 			
 			
-			//print(Int(classHour)!)
-			//print(Int(classMinute)!)
-			
-			
+			let teacherName = seperated[0] + " " + lastnameLetter + String(seperated[1].characters.dropFirst()).lowercased()
+
+			cell.teacher = NSAttributedString(string: teacherName, attributes: [NSForegroundColorAttributeName: Style.sectionHeaderTitleColor])
+			let time = classInfo[className]?["time"] as! String
+			cell.time = time.components(separatedBy: "-")[0]
+			cell.presence = classRoom
 		}
 		
 		cell.update()
@@ -269,36 +278,53 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		return classList.count
 	}
 	func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+		print("Setting")
+		UserDefaults.standard.set(classList[(diaryTable.indexPathForSelectedRow?.row)!], forKey: "selectedClass")
 		let selectedClass = classList[indexPath.row]
-		let selectedclassNote = classNote[selectedClass]
+		_ = classNote[selectedClass]
 		let cell: UITableViewCell = diaryTable.cellForRow(at: indexPath)!
 		cell.contentView.backgroundColor = Style.sectionHeaderBackgroundColorHighlighted //Allow custom selected colours
-		UIView.animate(withDuration: 0.3, animations: {self.displayNote.text = selectedclassNote!})
 		
+		let storyboard = UIStoryboard(name: "Main", bundle: nil)
+		let mainController = storyboard.instantiateViewController(withIdentifier: "classOverview") as UIViewController
+		
+		
+		print(classList[(diaryTable.indexPathForSelectedRow?.row)!])
+		//navigationController?.present(mainController, animated: true, completion: nil)
+		let wrapper = wrapperviewController()
+		print("Going... going...")
+		wrapper.navigationController?.present(mainController, animated: true, completion: nil)
 	}
+	
+
+	
 }
 	
 class diaryList : UITableViewCell{
-	var name = ""
-	var note = ""
-	var teacher = ""
+	var name = NSAttributedString()
+	var note = NSAttributedString()
+	var teacher = NSAttributedString()
 	var time = ""
 	var presence = ""
 	
 	@IBOutlet weak var className: UILabel!
-	@IBOutlet weak var classNote: UILabel!
+	//@IBOutlet weak var classNote: UILabel!
 	@IBOutlet weak var classPresence: UILabel!
 	@IBOutlet weak var classTime: UILabel!
 	@IBOutlet weak var classInfo: UILabel!
+	@IBOutlet weak var classNote: UITextView!
+	var accessoryButton: UIButton?
 	
 	
 	
 	func update() {
-		classNote.isHidden = true
-		className.text = name
-		classNote.text = note
+		
+		
+		className.attributedText = name
+		classNote.attributedText = note
+		classNote.font = UIFont(name: "System Font Regular", size: 15.0)
 		classPresence.text = presence
 		classTime.text = time
-		classInfo.text = teacher
+		classInfo.attributedText = teacher
 	}
 }
