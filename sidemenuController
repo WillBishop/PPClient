@@ -12,23 +12,58 @@ import Foundation
 
 class sidemenuController: UITableViewController {
 	
-	var headers = ["Daymap", "About"]
-	var sections = ["Daymap": ["Dayplan", "Homework", "Classes", "Grades", "Announcements"], "About": ["Settings"]]
+	@IBOutlet var menuList: UITableView!
 	
+	var headers = ["Daymap", "About"]
+	var sections = ["Daymap": ["Diary", "Homework", "Classes", "Grades", "Announcements"], "About": ["Settings"]]
 	var selectedCell = String()
     override func viewDidLoad() {
         super.viewDidLoad()
     }
 
 	
-
+	var accountType = "Teacher"
+	var accountTypes = ["Student", "Prefect", "Parent", "Teacher", "Principal", "Admin", "Developer"]
 	override func viewWillAppear(_ animated: Bool) {
+		
+		if accountType == "Teacher"{
+			headers.append("Admin")
+			sections["Admin"] = ["Post"]
+			sections["Daymap"] = sections["Daymap"]?.filter{$0 != "Homework"}
+		}
+		
+		self.navigationItem.title = "Menu"
+		self.navigationController?.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName: Style.sectionHeaderTitleColor]
+		tableView.tableFooterView = UIView()
+		navigationController?.navigationBar.barTintColor = Style.sectionHeaderBackgroundColor
 		print("Presented sidemenu")
 		tableView.backgroundColor = Style.tableheaderColor
 	}
 	override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
 		cell.backgroundColor = Style.tablecellColor
 		
+		let selectedHeader = indexPath[0]
+		let selectedRow = indexPath[1]
+		let nameofCell = sections[headers[selectedHeader]]![selectedRow]
+		
+		let cellText = NSMutableAttributedString(string: sections[headers[selectedHeader]]![selectedRow])
+		
+		let range = (nameofCell as NSString).range(of: nameofCell)
+		cellText.addAttributes([NSForegroundColorAttributeName: Style.sectionHeaderTitleColor], range: range)
+		
+		cell.textLabel?.attributedText = cellText
+
+		
+	}
+	override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+		let cell = menuList.dequeueReusableCell(withIdentifier: "menuItem")!
+		if indexPath.section == 0{
+			cell.textLabel?.text = sections[headers[indexPath.section]]?[indexPath.row]
+		} else if indexPath.section == 1{
+			cell.textLabel?.text = sections[headers[indexPath.section]]?[indexPath.row]
+		}
+		
+		return cell
 	}
 	
 	override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
@@ -42,14 +77,24 @@ class sidemenuController: UITableViewController {
 		
 		return returnedView
 	}
+	override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+		return (sections[headers[section]]?.count)!
+
+	}
+	override func numberOfSections(in tableView: UITableView) -> Int {
+		return headers.count
+	}
+	override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+		return headers[section]
+	}
 	
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
 		print("Going")
-		var destviewController: wrapperviewController = segue.destination as! wrapperviewController
+		let destviewController: wrapperviewController = segue.destination as! wrapperviewController
 		var selectCell = tableView.indexPathForSelectedRow!
 		
-		var selectedHeader = selectCell[0]
-		var selectedRow = selectCell[1]
+		let selectedHeader = selectCell[0]
+		let selectedRow = selectCell[1]
 		
 		selectedCell = sections[headers[selectedHeader]]![selectedRow]
 		
