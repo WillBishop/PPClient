@@ -2,7 +2,7 @@ More Screenshots: https://imgur.com/a/SGGsx (Partially outdated)
 
 ![Class View](http://i.imgur.com/TQGKUGS.png "Wrapper View")
 
-![Diary View Night](https://i.imgur.com/y5rHUwj.png "Night Mode Diary")
+![Diary View Night](http://i.imgur.com/irx4vIn.png "Night Mode Diary")
 
 
 Outdated design below (concept still applies)
