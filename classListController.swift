@@ -21,8 +21,11 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 	//let displayNote = UITextView(frame: CGRect(x:0, y:0, width:UIScreen.main.bounds.width - 10, height:300)) //text view to be footer to table
 	override func viewWillAppear(_ animated: Bool) {
 
-
+//		let noClasses = UITextView(frame: CGRect(x:0, y:0, width:view.frame.width, height:view.frame.height))
+//		noClasses.text = "No classes today, yay!"
+		//diaryTable.tableFooterView = UIView()
 		print("Starting")
+	
 		_ = Style.loadTheme() //loadTheme() returns a string, but I do not use it at this moment
 		diaryTable.backgroundColor = Style.sectionHeaderBackgroundColor
 		
@@ -48,6 +51,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 	}
 	override func viewDidLoad() {
 		super.viewDidLoad()
+		
 //		displayNote.text = "Click a class to reveal more information"
 //		displayNote.font = UIFont.systemFont(ofSize: 14.0)
 //		displayNote.isEditable = false //Theoretically allows the user to highlight and copy, but not actually edit the text (client-side)
@@ -74,7 +78,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		
 		diaryTable.delegate = self
 		diaryTable.dataSource = self
-		//getDiary()
+		getDiary()
 		// Do any additional setup after loading the view.
 	}
 	override func viewDidAppear(_ animated: Bool) {
@@ -136,14 +140,17 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 	func getDiary(){
 		
 		let keychain = KeychainSwift()
-		let username = keychain.get("username")!
+		let username = keychain.get("stirlingUsername")!
 		//username = username.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlQueryAllowed)!
-		//print(username)
-		let password = keychain.get("password")!
+	
+		let password = keychain.get("stirlingPassword")!
 		//var password = "@abc#".encodeUrl()
-		//print(password)
+		print(password)
 		//print("Starting")
-		Alamofire.request("https://da.gihs.sa.edu.au/stirling/classes/daily/get?username=\(username)&password=\(password)", method: .get)
+		let date = "12/04/17" //Hardcoded date for testing
+		
+		print("https://da.gihs.sa.edu.au/stirling/student/classes/get/daily?username=\(username.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!)&password=\(password.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!)&date=12/04/2017")
+		Alamofire.request("https://da.gihs.sa.edu.au/stirling/student/classes/get/daily?username=\(username.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!)&password=\(password.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!)&date=\(date)", method: .get)
 			.responseJSON { response in
 				print(response.response?.statusCode ?? "Got nothing")
 				print("Done")
@@ -153,22 +160,25 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 					self.classInfo.removeAll()
 					let json = JSON(response.result.value!)
 					
-					for i in json["daymapDiaryClasses"]{
+					for i in json["daymapDailyClasses"]{
+						
 						let name = String(describing: i.1["className"])
 						
 						self.classList.append(String(describing: i.1["className"]))
 						
-						if i.1["classNotes"].exists(){
-							self.classNote[name] = String(describing: i.1["classNotes"])
-						} else {
-							self.classNote[name] = "No lesson plans have been entered for this lesson"
+						self.classNote[name] = String(describing: i.1["classNotes"])
+						print(self.classNote[name]!!)
+						if String(describing: self.classNote[name]!!) == "NONE_AVAILABLE"{
+							self.classNote[name] = "No lesson plans have been entered for this class"
 						}
+						
 						var attendance = "✓"
-						if String(describing: i.1["classAttendance"]) == "PRESENT"{
+						if String(describing: i.1["attendance"]) == "PRESENT"{
 							attendance = "✓"
 						} else {
 							attendance = "✘"
 						}
+						
 						let numericalStart = String(describing: i.1["startTime"]).replacingOccurrences(of: " AM", with: "").replacingOccurrences(of: " PM", with: "")
 						
 						var numericalstartTime = numericalStart.components(separatedBy: ":")
@@ -184,7 +194,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 						
 						
 						
-						self.classInfo[name] = ["time": String(describing: i.1["startTime"]), "room": String(describing: i.1["roomName"]), "teacher":   String(describing: (i.1["teacherName"])), "presence": attendance, "numericalstartHour": numericalstartTime[0], "numericalstartMinute": numericalstartTime[1], "homework": String(describing: (i.1["homework"]))]
+						self.classInfo[name] = ["time": String(describing: i.1["startTime"]), "room": String(describing: i.1["roomName"]), "teacher":   String(describing: (i.1["teachers"][0])), "presence": attendance, "numericalstartHour": numericalstartTime[0], "numericalstartMinute": numericalstartTime[1], "homework": String(describing: (i.1["homework"]))]
 						
 						let classRoom = self.classInfo[name]?["room"] as! String
 						let classHour = self.classInfo[name]?["numericalstartHour"] as! String
@@ -219,6 +229,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 	
 	
 	func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+		
 		let cell = diaryTable.dequeueReusableCell(withIdentifier: "class", for: indexPath) as! diaryList
 		cell.backgroundColor = Style.sectionHeaderBackgroundColor
 		let className = classList[indexPath.row]
@@ -241,8 +252,11 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		style.lineSpacing = 0
 		
 		let attributes = [NSParagraphStyleAttributeName: style, NSForegroundColorAttributeName: UIColor.lightGray]
-		let filltext = NSAttributedString(string: classNote[className]!!, attributes: attributes)
 		
+		let notetoUse = classNote[className]!!.replacingOccurrences(of: "\n\n\n", with: "\n")
+
+		
+		let filltext = NSAttributedString(string: notetoUse, attributes: attributes)
 		cell.note = filltext
 		cell.classNote.textContainer.maximumNumberOfLines = 3
 		cell.classNote.textContainer.lineBreakMode = .byTruncatingTail

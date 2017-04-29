@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import KeychainSwift
 
 class signupOneController: UIViewController, UITextFieldDelegate  {
 
@@ -35,7 +36,7 @@ class signupOneController: UIViewController, UITextFieldDelegate  {
 		NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(notification:)), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
 		
 		
-		let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: "dismissKeyboard")
+		let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(signupOneController.dismissKeyboard))
 		
 		view.addGestureRecognizer(tap)
 		
@@ -92,7 +93,7 @@ class signupOneController: UIViewController, UITextFieldDelegate  {
 	func keyboardWillShow(notification: NSNotification) {
 		
 		if alreadyMoved != true{
-			if let keyboardSize = (notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.cgRectValue {
+			if ((notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.cgRectValue) != nil {
 				alreadyMoved = true
 				self.view.frame.origin.y -= 20
 			}
@@ -104,30 +105,19 @@ class signupOneController: UIViewController, UITextFieldDelegate  {
 	}
 	
 	func keyboardWillHide(notification: NSNotification) {
-		if let keyboardSize = (notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.cgRectValue {
+		if ((notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.cgRectValue) != nil {
 			self.view.frame.origin.y += 20
 			alreadyMoved = false
 		}
 	}
 	
 	func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-		print("LETS A GO")
-		if (textField.returnKeyType==UIReturnKeyType.go)
-		{
-			
-				if checkInput(){
-					dismissKeyboard()
-					let storyboard = UIStoryboard(name: "Login", bundle: nil)
-					let mainController = storyboard.instantiateViewController(withIdentifier: "signuppageOne") as UIViewController
-					
-					navigationController?.pushViewController(mainController, animated: true)
-
-		}
+		if (textField.returnKeyType==UIReturnKeyType.go){
+			checkInput()
 		}
 		if let nextField = stirlingUsername.superview?.viewWithTag(textField.tag + 1) as? UITextField {
 			nextField.becomeFirstResponder()
 		} else {
-			// Not found, so remove keyboard.
 			stirlingUsername.resignFirstResponder()
 		}
 		
@@ -141,7 +131,7 @@ class signupOneController: UIViewController, UITextFieldDelegate  {
 		return emailPredicate.evaluate(with: enteredEmail)
 		
 	}
-	func checkInput() -> Bool{
+	func checkInput(){
 		var response = true
 		var alreadyEvaluated = false
 		if (stirlingUsername.text?.characters.count == 0 && accountEmail.text?.characters.count == 0) {
@@ -170,18 +160,28 @@ class signupOneController: UIViewController, UITextFieldDelegate  {
 			}
 		
 		}
-		return response
-	}
-	@IBAction func signupTwo(_ sender: Any) {
-		dismissKeyboard()
-		
-		if checkInput(){
+		if response == true{
+			var defaults = UserDefaults()
+			defaults.set(stirlingUsername.text!, forKey: "stirlingUsername")
+			defaults.set(accountEmail.text!, forKey: "stirlingEmail")
+			defaults.set(stirlingPassword.text!, forKey: "stirlingPassword")
+			
+			var keychaindefaults = KeychainSwift()
+			keychaindefaults.set(stirlingUsername.text!, forKey: "stirlingUsername")
+			keychaindefaults.set(accountEmail.text!, forKey: "stirlingEmail")
+			keychaindefaults.set(stirlingPassword.text!, forKey: "stirlingPassword")
+
 			let storyboard = UIStoryboard(name: "Login", bundle: nil)
 			let mainController = storyboard.instantiateViewController(withIdentifier: "signuppageTwo") as UIViewController
 			
 			navigationController?.pushViewController(mainController, animated: true)
 
 		}
+	}
+	@IBAction func signupTwo(_ sender: Any) {
+		dismissKeyboard()
+		checkInput()
+		
 	}
     /*
     // MARK: - Navigation

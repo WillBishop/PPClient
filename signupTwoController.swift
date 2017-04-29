@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Alamofire
 
 class signupTwoController: UIViewController, UITextFieldDelegate  {
 	
@@ -19,13 +20,16 @@ class signupTwoController: UIViewController, UITextFieldDelegate  {
 	@IBOutlet weak var daymapConfirm: UITextField!
 	var alreadyMoved = false
 	
+	@IBOutlet weak var errorMessage: UILabel!
+	
 	override func viewDidLoad() {
 		super.viewDidLoad()
+		errorMessage.isHidden = true
 		NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(notification:)), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
 		NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(notification:)), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
 		
 		
-		let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: "dismissKeyboard")
+		let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(signupTwoController.dismissKeyboard))
 		
 		view.addGestureRecognizer(tap)
 		
@@ -76,7 +80,7 @@ class signupTwoController: UIViewController, UITextFieldDelegate  {
 	func keyboardWillShow(notification: NSNotification) {
 		
 		if alreadyMoved != true{
-			if let keyboardSize = (notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.cgRectValue {
+			if ((notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.cgRectValue) != nil {
 				alreadyMoved = true
 				self.view.frame.origin.y -= 20
 			}
@@ -88,7 +92,7 @@ class signupTwoController: UIViewController, UITextFieldDelegate  {
 	}
 	
 	func keyboardWillHide(notification: NSNotification) {
-		if let keyboardSize = (notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.cgRectValue {
+		if ((notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.cgRectValue) != nil {
 			self.view.frame.origin.y += 20
 			alreadyMoved = false
 		}
@@ -99,10 +103,7 @@ class signupTwoController: UIViewController, UITextFieldDelegate  {
 		if (textField.returnKeyType==UIReturnKeyType.go)
 		{
 			dismissKeyboard()
-			let storyboard = UIStoryboard(name: "Login", bundle: nil)
-			let mainController = storyboard.instantiateViewController(withIdentifier: "signuppageOne") as UIViewController
-			
-			navigationController?.pushViewController(mainController, animated: true)
+			checkInput()
 			
 		}
 		
@@ -116,13 +117,43 @@ class signupTwoController: UIViewController, UITextFieldDelegate  {
 		
 		return true
  }
-	@IBAction func signupTwo(_ sender: Any) {
+	func checkInput(){
+		var response = true
+		//var alreadyEvaluated = false
+		
+		if daymapPassword.text != daymapConfirm.text{
+			response = false
+			errorMessage.text = "Passwords do not match"
+			errorMessage.isHidden = false
+		}
+		
+		if response == true{
+			Alamofire.request("https://daymap.gihs.sa.edu.au/daymap/student/dayplan.aspx", method: .get)
+				.authenticate(user: daymapUsername.text!, password: daymapPassword.text!)
+				.responseString { response in
+					if response.response?.statusCode == 200{
+						let defaults = UserDefaults()
+						print("Setting \(self.daymapUsername.text!) for daymapUsername")
+						defaults.set(self.daymapUsername.text!, forKey: "daymapUsername")
+						print("Setting \(self.daymapPassword.text!) for daymapPassword")
+						defaults.set(self.daymapPassword.text!, forKey: "daymapPassword")
+						
+						let storyboard = UIStoryboard(name: "Login", bundle: nil)
+						let mainController = storyboard.instantiateViewController(withIdentifier: "signuppageThree") as UIViewController
+						self.navigationController?.pushViewController(mainController, animated: true)
+
+					} else {
+						self.errorMessage.text = "Invalid Username/Password"
+						self.errorMessage.isHidden = false
+					}
+			}
+		}
+	}
+
+	
+	@IBAction func signupThree(_ sender: Any) {
 		dismissKeyboard()
-		let storyboard = UIStoryboard(name: "Login", bundle: nil)
-		let mainController = storyboard.instantiateViewController(withIdentifier: "signuppageTwo") as UIViewController
-		
-		navigationController?.pushViewController(mainController, animated: true)
-		
+		checkInput()
 	}
 	/*
 	// MARK: - Navigation
