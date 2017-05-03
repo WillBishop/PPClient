@@ -18,27 +18,16 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 	var classNote = UserDefaults.standard.object(forKey: "cachedNotes") as? [String: String?] ?? [String: String!]()
 	var classInfo = UserDefaults.standard.object(forKey: "cachedInfo") as? [String: [String: Any]] ?? [String: [String: Any]]()
 	
-	//let displayNote = UITextView(frame: CGRect(x:0, y:0, width:UIScreen.main.bounds.width - 10, height:300)) //text view to be footer to table
 	override func viewWillAppear(_ animated: Bool) {
-
-//		let noClasses = UITextView(frame: CGRect(x:0, y:0, width:view.frame.width, height:view.frame.height))
-//		noClasses.text = "No classes today, yay!"
-		//diaryTable.tableFooterView = UIView()
-		print("Starting")
-	
 		_ = Style.loadTheme() //loadTheme() returns a string, but I do not use it at this moment
 		diaryTable.backgroundColor = Style.sectionHeaderBackgroundColor
-		
-		//self.navigationItem.setHidesBackButton(true, animated:true)
-		
-		//displayNote.backgroundColor = Style.sectionHeaderBackgroundColor
-		//displayNote.textColor = Style.sectionHeaderTitleColor
-
+		diaryTable.tableFooterView = UIView()
 		let rightSwipe = UISwipeGestureRecognizer(target: self, action: #selector(revealMenu)) //Gesture to bring out side menu (swipe from left to right)
 		rightSwipe.direction = .right
 		view.addGestureRecognizer(rightSwipe)
+		navigationItem.title = "Diary"
 		
-		
+	
 	}
 	
 	
@@ -52,29 +41,10 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		
-//		displayNote.text = "Click a class to reveal more information"
-//		displayNote.font = UIFont.systemFont(ofSize: 14.0)
-//		displayNote.isEditable = false //Theoretically allows the user to highlight and copy, but not actually edit the text (client-side)
-//		
-//		let customView = UIView(frame: CGRect(x:10, y:10, width:100, height:200))
-//
-//		customView.addSubview(displayNote)
-		
-		//diaryTable.tableFooterView = customView //Not only hides unused cells, but lets the note view scale with the amount of classes
-		
-		
+
 		
 	
 		
-		let date = NSDate()
-		_ = DateFormatter.Style.long
-		
-		let calender = NSCalendar.current
-		let month = calender.component(.month, from: date as Date)
-		let day = calender.component(.day, from: date as Date)
-		var sounds = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "11th", "12th", "14th", "15th", "16th", "17th", "18th", "19th", "20th", "21st", "22nd", "23rd", "24th", "25th", "26th", "27th", "28th", "29th", "30th", "30st"]
-		var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-		self.navigationController?.navigationBar.topItem?.title = "Diary - \(sounds[day - 1]) of \(months[month - 1])"
 		
 		diaryTable.delegate = self
 		diaryTable.dataSource = self
@@ -106,15 +76,15 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		center.requestAuthorization(options: options) {
 			(granted, error) in
 			if !granted {
-				print("Something went wrong")
+				//print("Something went wrong")
 			}
 		}
 		center.getNotificationSettings { (set) in
 			if set.authorizationStatus != .authorized{
-				print("User disabled notifications")
+				//print("User disabled notifications")
 				//TODO: Request permission again
 			} else {
-				print("Notifications Enabled")
+				//print("Notifications Enabled")
 			}
 		}
 		
@@ -128,7 +98,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		notification.sound = UNNotificationSound.default()
 		
 		let trigger = UNCalendarNotificationTrigger(dateMatching: classTime, repeats: false)
-		//print("Scheduling for \(classTime)")
+		////print("Scheduling for \(classTime)")
 		
 		let identifier = className
 		
@@ -137,29 +107,33 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 
 	}
 	
+	
 	func getDiary(){
 		
 		let keychain = KeychainSwift()
 		let username = keychain.get("stirlingUsername")!
-		//username = username.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlQueryAllowed)!
 	
 		let password = keychain.get("stirlingPassword")!
-		//var password = "@abc#".encodeUrl()
-		print(password)
-		//print("Starting")
-		let date = "12/04/17" //Hardcoded date for testing
+		let date = NSDate()
+		_ = DateFormatter.Style.long
 		
-		print("https://da.gihs.sa.edu.au/stirling/student/classes/get/daily?username=\(username.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!)&password=\(password.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!)&date=12/04/2017")
-		Alamofire.request("https://da.gihs.sa.edu.au/stirling/student/classes/get/daily?username=\(username.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!)&password=\(password.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!)&date=\(date)", method: .get)
+		let calender = NSCalendar.current
+		let month = calender.component(.month, from: date as Date)
+		let day = calender.component(.day, from: date as Date)
+		let year = calender.component(.year, from: date as Date)
+		let todayDate = "\(day)/\(month)/\(String(describing: year))"
+		//print(todayDate)
+
+		Alamofire.request("https://da.gihs.sa.edu.au/stirling/student/classes/get/daily?username=\(username.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!)&password=\(password.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!)&date=\(todayDate)", method: .get)
 			.responseJSON { response in
 				print(response.response?.statusCode ?? "Got nothing")
-				print("Done")
-				if response.result.value != nil{
+				//print("Done")
+				if response.response?.statusCode == 200{
 					self.classList.removeAll() //Remove all existing data to prevent overlapping data
 					self.classNote.removeAll()
 					self.classInfo.removeAll()
 					let json = JSON(response.result.value!)
-					
+					print(json)
 					for i in json["daymapDailyClasses"]{
 						
 						let name = String(describing: i.1["className"])
@@ -167,7 +141,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 						self.classList.append(String(describing: i.1["className"]))
 						
 						self.classNote[name] = String(describing: i.1["classNotes"])
-						print(self.classNote[name]!!)
+						//print(self.classNote[name]!!)
 						if String(describing: self.classNote[name]!!) == "NONE_AVAILABLE"{
 							self.classNote[name] = "No lesson plans have been entered for this class"
 						}
@@ -192,8 +166,6 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 						
 
 						
-						
-						
 						self.classInfo[name] = ["time": String(describing: i.1["startTime"]), "room": String(describing: i.1["roomName"]), "teacher":   String(describing: (i.1["teachers"][0])), "presence": attendance, "numericalstartHour": numericalstartTime[0], "numericalstartMinute": numericalstartTime[1], "homework": String(describing: (i.1["homework"]))]
 						
 						let classRoom = self.classInfo[name]?["room"] as! String
@@ -215,6 +187,27 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 					
 				} else {
 					//TODO Better error managment, this is just here to prevent an app crash, while still retaining some useful information for debugging
+					let alertController = UIAlertController(title: "Could not complete request", message: "The Stirling server is currently not responding. This could be due to invalid credentials", preferredStyle: UIAlertControllerStyle.alert)
+					
+					let cancelAction = UIAlertAction(title: "Dismiss", style: UIAlertActionStyle.default) {
+						UIAlertAction in
+						return
+					}
+					
+					let settingsAction = UIAlertAction(title: "Settings", style: UIAlertActionStyle.default) {
+						UIAlertAction in
+						print("Go to settings")
+						//todo go to settings
+						UserDefaults.standard.set("Settings", forKey: "selectedView")
+						let storyboard = UIStoryboard(name: "Main", bundle: nil)
+						
+						let initialViewController = storyboard.instantiateViewController(withIdentifier: "Settings")
+						wrapperviewController().embedView(initialViewController)
+					}
+					alertController.addAction(cancelAction)
+					alertController.addAction(settingsAction)
+					self.present(alertController, animated: true, completion: nil)
+					
 					print(response)
 					print("Error moving on")
 				}
@@ -225,6 +218,9 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		
 		
 		
+	}
+	func dismissed(){
+		print("Dismissed")
 	}
 	
 	
@@ -292,7 +288,6 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		return classList.count
 	}
 	func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-		print("Setting")
 		UserDefaults.standard.set(classList[(diaryTable.indexPathForSelectedRow?.row)!], forKey: "selectedClass")
 		let selectedClass = classList[indexPath.row]
 		_ = classNote[selectedClass]
@@ -303,14 +298,13 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		let mainController = storyboard.instantiateViewController(withIdentifier: "classOverview") as UIViewController
 		
 		
-		print(classList[(diaryTable.indexPathForSelectedRow?.row)!])
 		//navigationController?.present(mainController, animated: true, completion: nil)
 		let wrapper = wrapperviewController()
-		print("Going... going...")
 		wrapper.navigationController?.present(mainController, animated: true, completion: nil)
 	}
 	
 
+	
 	
 }
 	
