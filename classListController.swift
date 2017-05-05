@@ -6,7 +6,6 @@ import SwiftyJSON
 import KeychainSwift
 import UserNotifications
 
-
 class diaryController: UIViewController, UITableViewDataSource, UITableViewDelegate {
 	
 	
@@ -15,6 +14,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 	
 	
 	var classList = UserDefaults.standard.object(forKey: "cachedClasses") as? [String] ?? [String]() //Grab all the cached data
+	var classShortend = UserDefaults.standard.object(forKey: "cachedShortend") as? [String] ?? [String]()
 	var classNote = UserDefaults.standard.object(forKey: "cachedNotes") as? [String: String?] ?? [String: String!]()
 	var classInfo = UserDefaults.standard.object(forKey: "cachedInfo") as? [String: [String: Any]] ?? [String: [String: Any]]()
 	
@@ -40,11 +40,8 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 	}
 	override func viewDidLoad() {
 		super.viewDidLoad()
-		
-
-		
+				
 	
-		
 		
 		diaryTable.delegate = self
 		diaryTable.dataSource = self
@@ -84,7 +81,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 				//print("User disabled notifications")
 				//TODO: Request permission again
 			} else {
-				//print("Notifications Enabled")
+				print("Notifications Enabled")
 			}
 		}
 		
@@ -132,6 +129,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 					self.classList.removeAll() //Remove all existing data to prevent overlapping data
 					self.classNote.removeAll()
 					self.classInfo.removeAll()
+					self.classShortend.removeAll()
 					let json = JSON(response.result.value!)
 					print(json)
 					for i in json["daymapDailyClasses"]{
@@ -139,6 +137,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 						let name = String(describing: i.1["className"])
 						
 						self.classList.append(String(describing: i.1["className"]))
+						self.classShortend.append(String(describing: i.1["className"]).replacingOccurrences(of: "10 ", with: ""))
 						
 						self.classNote[name] = String(describing: i.1["classNotes"])
 						//print(self.classNote[name]!!)
@@ -179,6 +178,8 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 					}
 					
 					UserDefaults.standard.set(self.classList, forKey: "cachedClasses")
+					UserDefaults.standard.set(self.classShortend, forKey: "cachedShortend")
+					print(self.classShortend)
 					UserDefaults.standard.set(self.classNote, forKey: "cachedNotes")
 					UserDefaults.standard.set(self.classInfo, forKey: "cachedInfo")
 					
@@ -288,6 +289,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		return classList.count
 	}
 	func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+		
 		UserDefaults.standard.set(classList[(diaryTable.indexPathForSelectedRow?.row)!], forKey: "selectedClass")
 		let selectedClass = classList[indexPath.row]
 		_ = classNote[selectedClass]
