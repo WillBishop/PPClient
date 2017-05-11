@@ -5,6 +5,7 @@ import Alamofire
 import SwiftyJSON
 import KeychainSwift
 import UserNotifications
+import Crashlytics
 
 class diaryController: UIViewController, UITableViewDataSource, UITableViewDelegate {
 	
@@ -17,6 +18,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 	var classShortend = UserDefaults.standard.object(forKey: "cachedShortend") as? [String] ?? [String]()
 	var classNote = UserDefaults.standard.object(forKey: "cachedNotes") as? [String: String?] ?? [String: String!]()
 	var classInfo = UserDefaults.standard.object(forKey: "cachedInfo") as? [String: [String: Any]] ?? [String: [String: Any]]()
+	var alreadyAlerted = UserDefaults.standard.object(forKey: "alreadyAlerted") as? Bool ?? false
 	
 	override func viewWillAppear(_ animated: Bool) {
 		_ = Style.loadTheme() //loadTheme() returns a string, but I do not use it at this moment
@@ -26,6 +28,8 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		rightSwipe.direction = .right
 		view.addGestureRecognizer(rightSwipe)
 		navigationItem.title = "Diary"
+		let widget = UserDefaults(suiteName: "group.osmond.cache")
+		widget?.set(classList, forKey: "cachedClasses")
 		
 	
 	}
@@ -49,7 +53,11 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		// Do any additional setup after loading the view.
 	}
 	override func viewDidAppear(_ animated: Bool) {
-		registerLocal() //Register to allow local notifications
+		if #available(iOS 10.0, *) {
+			registerLocal()
+		} else {
+			//TODO  Notification support prior to IOS 10, need to download IOS 9 SDKS
+		} //Register to allow local notifications
 		
 	}
 	
@@ -67,6 +75,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		return date
 		
 	}
+	@available(iOS 10.0, *)
 	func registerLocal() { //In the future, each class will have a time associated with it, and then can have a weekly schedule from that
 		let options: UNAuthorizationOptions = [.alert, .sound] //Badges is not yet required
 		let center = UNUserNotificationCenter.current()
@@ -81,12 +90,13 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 				//print("User disabled notifications")
 				//TODO: Request permission again
 			} else {
-				print("Notifications Enabled")
+				//print("Notifications Enabled")
 			}
 		}
 		
 	}
 	
+	@available(iOS 10.0, *)
 	func scheduleNotification(_ className:String, _ classTeacher:String, _ classRoom:String,_ classTime:DateComponents){
 		let center = UNUserNotificationCenter.current()
 		let notification = UNMutableNotificationContent()
@@ -139,9 +149,9 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 						self.classList.append(String(describing: i.1["className"]))
 						self.classShortend.append(String(describing: i.1["className"]).replacingOccurrences(of: "10 ", with: ""))
 						
-						self.classNote[name] = String(describing: i.1["classNotes"])
+						self.classNote[name] = String(describing: i.1["classNotes"][0])
 						//print(self.classNote[name]!!)
-						if String(describing: self.classNote[name]!!) == "NONE_AVAILABLE"{
+						if String(describing: self.classNote[name]!!) == "null"{
 							self.classNote[name] = "No lesson plans have been entered for this class"
 						}
 						
@@ -173,7 +183,11 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 						let teacher = "\(self.classInfo[name]?["teacher"] as! String) in \(String(classRoom.characters.prefix(5)))"
 						
 						let classstartTime = self.dateGenerator(Int(classHour)!, Int(classMinute)!)
-						self.scheduleNotification(name, teacher, classRoom, classstartTime)
+						if #available(iOS 10.0, *) {
+							self.scheduleNotification(name, teacher, classRoom, classstartTime)
+						} else {
+							//Notification support for older devices (4s (maybe just 4) and below (any iPhone 3 users at GIHS?))
+						}
 						//print(self.classInfo)
 					}
 					
@@ -187,30 +201,33 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 					//print(self.classInfo)
 					
 				} else {
-					//TODO Better error managment, this is just here to prevent an app crash, while still retaining some useful information for debugging
-					let alertController = UIAlertController(title: "Could not complete request", message: "The Stirling server is currently not responding. This could be due to invalid credentials", preferredStyle: UIAlertControllerStyle.alert)
-					
-					let cancelAction = UIAlertAction(title: "Dismiss", style: UIAlertActionStyle.default) {
-						UIAlertAction in
-						return
-					}
-					
-					let settingsAction = UIAlertAction(title: "Settings", style: UIAlertActionStyle.default) {
-						UIAlertAction in
-						print("Go to settings")
-						//todo go to settings
-						UserDefaults.standard.set("Settings", forKey: "selectedView")
-						let storyboard = UIStoryboard(name: "Main", bundle: nil)
+					if self.alreadyAlerted == false{
+						UserDefaults.standard.set(true, forKey: "alreadyAlerted")
+						Answers.logCustomEvent(withName: "Failed to fetch data", customAttributes: ["Status Code": String(describing: response.response?.statusCode)])
+						let alertController = UIAlertController(title: "Could not complete request", message: "The Stirling server is currently not responding. This could be due to invalid credentials", preferredStyle: UIAlertControllerStyle.alert)
 						
-						let initialViewController = storyboard.instantiateViewController(withIdentifier: "Settings")
-						wrapperviewController().embedView(initialViewController)
+						let cancelAction = UIAlertAction(title: "Dismiss", style: UIAlertActionStyle.default) {
+							UIAlertAction in
+							return
+						}
+						
+						let settingsAction = UIAlertAction(title: "Settings", style: UIAlertActionStyle.default) {
+							UIAlertAction in
+							print("Go to settings")
+							//todo go to settings
+	//						UserDefaults.standard.set("Settings", forKey: "selectedView")
+	//						let storyboard = UIStoryboard(name: "Main", bundle: nil)
+	//						
+	//						let initialViewController = storyboard.instantiateViewController(withIdentifier: "Settings")
+	//						wrapperviewController().embedView(initialViewController)
+						}
+						alertController.addAction(cancelAction)
+						alertController.addAction(settingsAction)
+						self.present(alertController, animated: true, completion: nil)
+						
+						print(response)
+						print("Error moving on")
 					}
-					alertController.addAction(cancelAction)
-					alertController.addAction(settingsAction)
-					self.present(alertController, animated: true, completion: nil)
-					
-					print(response)
-					print("Error moving on")
 				}
 				self.diaryTable.reloadData()
 		}
@@ -290,6 +307,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 	}
 	func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 		
+		//Crashlytics.sharedInstance().crash()
 		UserDefaults.standard.set(classList[(diaryTable.indexPathForSelectedRow?.row)!], forKey: "selectedClass")
 		let selectedClass = classList[indexPath.row]
 		_ = classNote[selectedClass]
