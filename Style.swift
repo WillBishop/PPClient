@@ -18,11 +18,13 @@ struct Style{
 	static var sectionHeaderAlpha: Float = 1.0
 	static var tableheaderColor = UIColor.white
 	static var tablecellColor = UIColor.gray
+	static var classnameColor = UIColor.black
 	
 	static func diarythemeLight(){
 		UserDefaults.standard.set("Light Theme", forKey: "theme")
-		sectionHeaderTitleFont = UIFont(name: "Helvetica", size: 18)
+		sectionHeaderTitleFont = UIFont(name: "Helvetica", size: 4)
 		sectionHeaderTitleColor = UIColor.black
+		classnameColor = UIColor(red: 0.29, green: 0.564, blue: 0.886, alpha: 1) //RGB 0-1 = RGB Value / 255 (Ie. 247 / 255 = 0.968)
 		sectionHeaderBackgroundColor = UIColor.white
 		secionHeaderNavigationBarColor = UIColor.white
 		sectionHeaderBackgroundColorHighlighted = UIColor.lightText
@@ -32,14 +34,15 @@ struct Style{
 	}
 	static func diarythemeNight(){
 		UserDefaults.standard.set("Dark Theme", forKey: "theme")
-		sectionHeaderTitleFont = UIFont(name: "Helvetica", size: 18)
+		sectionHeaderTitleFont = UIFont(name: "Helvetica", size: 4)
 		sectionHeaderTitleColor = UIColor.white
+		classnameColor = UIColor.white
 		sectionHeaderBackgroundColor = UIColor.darkGray
 		secionHeaderNavigationBarColor = UIColor.darkGray
 		sectionHeaderBackgroundColorHighlighted = UIColor.gray
 		sectionHeaderAlpha = 0.8
-		tableheaderColor = UIColor.darkGray
-		tablecellColor = UIColor.gray
+		tableheaderColor = UIColor.gray
+		tablecellColor = UIColor.darkGray
 	}
 	static let availableThemes = ["Light Theme", "Dark Theme"]
 	static func loadTheme() -> String{
@@ -57,3 +60,4 @@ struct Style{
 		return setTheme
 	}
 }
+
