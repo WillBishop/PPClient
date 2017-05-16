@@ -52,7 +52,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 		getDiary()
 		// Do any additional setup after loading the view.
 	}
-	override func viewDidAppear(_ animated: Bool) {
+	override func viewDidAppear(_ animated:			Bool) {
 		if #available(iOS 10.0, *) {
 			registerLocal()
 		} else {
@@ -175,7 +175,7 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 						
 
 						
-						self.classInfo[name] = ["time": String(describing: i.1["startTime"]), "room": String(describing: i.1["roomName"]), "teacher":   String(describing: (i.1["teachers"][0])), "presence": attendance, "numericalstartHour": numericalstartTime[0], "numericalstartMinute": numericalstartTime[1], "homework": String(describing: (i.1["homework"]))]
+						self.classInfo[name] = ["time": String(describing: i.1["startTime"]), "room": String(describing: i.1["roomName"]), "teacher":   String(describing: (i.1["teacher"])), "presence": attendance, "numericalstartHour": numericalstartTime[0], "numericalstartMinute": numericalstartTime[1], "homework": String(describing: (i.1["homework"]))]
 						
 						let classRoom = self.classInfo[name]?["room"] as! String
 						let classHour = self.classInfo[name]?["numericalstartHour"] as! String
@@ -284,14 +284,8 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 			var classRoom = classInfo[className]?["room"] as! String
 			classRoom = String(classRoom.characters.prefix(5))
 			let teacher = (classInfo[className]?["teacher"] as! String)
-			var seperated = teacher.components(separatedBy: " ")
-			
-			let lastnameLetter = String((seperated[1].characters.first!))
-			
-			
-			let teacherName = seperated[0] + " " + lastnameLetter + String(seperated[1].characters.dropFirst()).lowercased()
 
-			cell.teacher = NSAttributedString(string: teacherName, attributes: [NSForegroundColorAttributeName: Style.sectionHeaderTitleColor])
+			cell.teacher = NSAttributedString(string: teacher, attributes: [NSForegroundColorAttributeName: Style.sectionHeaderTitleColor])
 			let time = classInfo[className]?["time"] as! String
 			cell.time = time.components(separatedBy: "-")[0]
 			cell.presence = classRoom
