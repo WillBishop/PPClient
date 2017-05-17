@@ -141,11 +141,9 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 					self.classInfo.removeAll()
 					self.classShortend.removeAll()
 					let json = JSON(response.result.value!)
-					print(json)
-					for i in json["daymapDailyClasses"]{
-						
+					for i in json["dailyClasses"]{
+
 						let name = String(describing: i.1["className"])
-						
 						self.classList.append(String(describing: i.1["className"]))
 						self.classShortend.append(String(describing: i.1["className"]).replacingOccurrences(of: "10 ", with: ""))
 						
@@ -193,7 +191,6 @@ class diaryController: UIViewController, UITableViewDataSource, UITableViewDeleg
 					
 					UserDefaults.standard.set(self.classList, forKey: "cachedClasses")
 					UserDefaults.standard.set(self.classShortend, forKey: "cachedShortend")
-					print(self.classShortend)
 					UserDefaults.standard.set(self.classNote, forKey: "cachedNotes")
 					UserDefaults.standard.set(self.classInfo, forKey: "cachedInfo")
 					
