@@ -19,6 +19,9 @@ class wrapperviewController: UIViewController {
 	
 	@IBOutlet weak var embeddedView: UIView!
 	
+	override var preferredStatusBarStyle: UIStatusBarStyle{
+		return .lightContent
+	}
 	override func viewWillAppear(_ animated: Bool) {
 		//selectedView = "Diary"
 		_ = Style.loadTheme()
