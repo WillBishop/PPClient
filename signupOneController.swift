@@ -40,7 +40,7 @@ class signupOneController: UIViewController, UITextFieldDelegate  {
 		
 		view.addGestureRecognizer(tap)
 		
-		stirlingUsername.attributedPlaceholder = NSAttributedString(string: "Username", attributes: [NSForegroundColorAttributeName: UIColor.white])
+		stirlingUsername.attributedPlaceholder = NSAttributedString(string: "Choose a Username", attributes: [NSForegroundColorAttributeName: UIColor.white])
 		stirlingUsername.borderStyle = UITextBorderStyle.roundedRect
 		stirlingUsername.layer.borderColor = UIColor.white.cgColor
 		stirlingUsername.layer.borderWidth = CGFloat(1.0)
@@ -55,7 +55,7 @@ class signupOneController: UIViewController, UITextFieldDelegate  {
 		accountEmail.delegate = self
 
 
-		stirlingPassword.attributedPlaceholder = NSAttributedString(string: "Password", attributes: [NSForegroundColorAttributeName: UIColor.white])
+		stirlingPassword.attributedPlaceholder = NSAttributedString(string: "Choose a Password", attributes: [NSForegroundColorAttributeName: UIColor.white])
 		stirlingPassword.borderStyle = UITextBorderStyle.roundedRect
 		stirlingPassword.layer.borderColor = UIColor.white.cgColor
 		stirlingPassword.layer.borderWidth = CGFloat(1.0)
@@ -161,12 +161,8 @@ class signupOneController: UIViewController, UITextFieldDelegate  {
 		
 		}
 		if response == true{
-			var defaults = UserDefaults()
-			defaults.set(stirlingUsername.text!, forKey: "stirlingUsername")
-			defaults.set(accountEmail.text!, forKey: "stirlingEmail")
-			defaults.set(stirlingPassword.text!, forKey: "stirlingPassword")
 			
-			var keychaindefaults = KeychainSwift()
+			let keychaindefaults = KeychainSwift()
 			keychaindefaults.set(stirlingUsername.text!, forKey: "stirlingUsername")
 			keychaindefaults.set(accountEmail.text!, forKey: "stirlingEmail")
 			keychaindefaults.set(stirlingPassword.text!, forKey: "stirlingPassword")

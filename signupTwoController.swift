@@ -8,7 +8,7 @@
 
 import UIKit
 import Alamofire
-
+import KeychainSwift
 class signupTwoController: UIViewController, UITextFieldDelegate  {
 	
 	
@@ -33,7 +33,7 @@ class signupTwoController: UIViewController, UITextFieldDelegate  {
 		
 		view.addGestureRecognizer(tap)
 		
-		daymapUsername.attributedPlaceholder = NSAttributedString(string: "Daymap Username", attributes: [NSForegroundColorAttributeName: UIColor.white])
+		daymapUsername.attributedPlaceholder = NSAttributedString(string: "Daymap Username (i.e john.smith)", attributes: [NSForegroundColorAttributeName: UIColor.white])
 		daymapUsername.borderStyle = UITextBorderStyle.roundedRect
 		daymapUsername.layer.borderColor = UIColor.white.cgColor
 		daymapUsername.layer.borderWidth = CGFloat(1.0)
@@ -132,10 +132,8 @@ class signupTwoController: UIViewController, UITextFieldDelegate  {
 				.authenticate(user: daymapUsername.text!, password: daymapPassword.text!)
 				.responseString { response in
 					if response.response?.statusCode == 200{
-						let defaults = UserDefaults()
-						print("Setting \(self.daymapUsername.text!) for daymapUsername")
+						let defaults = KeychainSwift()
 						defaults.set(self.daymapUsername.text!, forKey: "daymapUsername")
-						print("Setting \(self.daymapPassword.text!) for daymapPassword")
 						defaults.set(self.daymapPassword.text!, forKey: "daymapPassword")
 						
 						let storyboard = UIStoryboard(name: "Login", bundle: nil)

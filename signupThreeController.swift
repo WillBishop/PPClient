@@ -9,6 +9,7 @@
 import UIKit
 import Alamofire
 import KeychainSwift
+import Crashlytics
 
 class signupThreeController: UIViewController, UITextFieldDelegate  {
 	
@@ -30,11 +31,11 @@ class signupThreeController: UIViewController, UITextFieldDelegate  {
 		NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(notification:)), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
 		
 		
-		let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: "dismissKeyboard")
+		let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(signupThreeController.dismissKeyboard))
 		
 		view.addGestureRecognizer(tap)
 		
-		moodleUsername.attributedPlaceholder = NSAttributedString(string: "moodle Username", attributes: [NSForegroundColorAttributeName: UIColor.white])
+		moodleUsername.attributedPlaceholder = NSAttributedString(string: "Moodle Username (i.e john.smith)", attributes: [NSForegroundColorAttributeName: UIColor.white])
 		moodleUsername.borderStyle = UITextBorderStyle.roundedRect
 		moodleUsername.layer.borderColor = UIColor.white.cgColor
 		moodleUsername.layer.borderWidth = CGFloat(1.0)
@@ -43,7 +44,7 @@ class signupThreeController: UIViewController, UITextFieldDelegate  {
 		
 		
 		
-		moodlePassword.attributedPlaceholder = NSAttributedString(string: "moodle Password", attributes: [NSForegroundColorAttributeName: UIColor.white])
+		moodlePassword.attributedPlaceholder = NSAttributedString(string: "Moodle Password", attributes: [NSForegroundColorAttributeName: UIColor.white])
 		moodlePassword.borderStyle = UITextBorderStyle.roundedRect
 		moodlePassword.layer.borderColor = UIColor.white.cgColor
 		moodlePassword.layer.borderWidth = CGFloat(1.0)
@@ -81,7 +82,7 @@ class signupThreeController: UIViewController, UITextFieldDelegate  {
 	func keyboardWillShow(notification: NSNotification) {
 		
 		if alreadyMoved != true{
-			if let keyboardSize = (notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.cgRectValue {
+			if ((notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.cgRectValue) != nil {
 				alreadyMoved = true
 				self.view.frame.origin.y -= 20
 			}
@@ -93,7 +94,7 @@ class signupThreeController: UIViewController, UITextFieldDelegate  {
 	}
 	
 	func keyboardWillHide(notification: NSNotification) {
-		if let keyboardSize = (notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.cgRectValue {
+		if ((notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.cgRectValue) != nil {
 			self.view.frame.origin.y += 20
 			alreadyMoved = false
 		}
@@ -119,44 +120,57 @@ class signupThreeController: UIViewController, UITextFieldDelegate  {
 		return true
  }
 	func createAccount(){
-		let defaults = UserDefaults()
-		let stirlingUsername = defaults.object(forKey: "stirlingUsername")
-		let stirlingPassword = defaults.object(forKey: "stirlingPassword")
-		let stirlingEmail = defaults.object(forKey: "stirlingEmail")
-		let daymapUsername = defaults.object(forKey: "daymapUsername")
-		let daymapPassword = defaults.object(forKey: "daymapPassword")
-		let moodleUsername = defaults.object(forKey: "moodleUsername")
-		let moodlePassword = defaults.object(forKey: "moodlePassword")
+		let defaults = KeychainSwift()
 		
-		let stirlingParameters = [
-			"username": stirlingUsername!,
-			"password": stirlingPassword!,
-			"email": stirlingEmail!
+		
+		let stirlingUsername = defaults.get( "stirlingUsername")!
+		print("1")
+		let stirlingPassword = defaults.get( "stirlingPassword")!
+		print("2")
+		let stirlingEmail = defaults.get( "stirlingEmail")!
+		print("3")
+		let daymapUsername = defaults.get( "daymapUsername")!
+		print("4")
+		let daymapPassword = defaults.get( "daymapPassword")!
+		print("5")
+		let moodleUsername = defaults.get( "moodleUsername")!
+		print("6")
+		let moodlePassword = defaults.get( "moodlePassword")!
+		print("7")
+		
+		let stirlingParameters: [String: String] = [
+			"username": stirlingUsername.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!,
+			"password": stirlingPassword.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!,
+			"email": stirlingEmail.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
 		]
-		let daymapUserParameters = [
-			"username": stirlingUsername!,
-			"password": stirlingPassword!,
-			"daymapUsername": daymapUsername!
+		let daymapUserParameters: [String: String] = [
+			"username": stirlingUsername.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!,
+			"password": stirlingPassword.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!,
+			"daymapUsername": daymapUsername.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
 		]
 		print(daymapUserParameters)
 
-		let daymapPassParameters = [
-			"username": stirlingUsername!,
-			"password": stirlingPassword!,
-			"daymapPassword": daymapPassword!
+		let daymapPassParameters: [String: String] = [
+			"username": stirlingUsername.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!,
+			"password": stirlingPassword.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!,
+			"daymapPassword": daymapPassword.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
 		]
 		print(daymapPassParameters)
-		let moodleUserParameters = [
-			"username": stirlingUsername!,
-			"password": stirlingPassword!,
-			"moodleUsername": moodleUsername!
+		let moodleUserParameters: [String: String] = [
+			"username": stirlingUsername.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!,
+			"password": stirlingPassword.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!,
+			"moodleUsername": moodleUsername.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
 		]
-		let moodlePassParameters = [
-			"username": stirlingUsername!,
-			"password": stirlingPassword!,
-			"moodlePassword": moodlePassword!
+		let moodlePassParameters: [String: String] = [
+			"username": stirlingUsername.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!,
+			"password": stirlingPassword.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!,
+			"moodlePassword": moodlePassword.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
 		]
 		
+		/* The reasoning behind this horrendous nesting is that Alamofire is Asynchronous. Each of these requests
+		takes less than 200ms. If I lined them all up, there is the possibility that it would try to add the Moodle 
+		username to an account that did not yet exist. The nesting waits for each request to finish.
+		*/
 		_ = Alamofire.request("https://da.gihs.sa.edu.au/stirling/accounts/add", method: .post, parameters: stirlingParameters)
 			.responseString { response in
 				print("/accounts/add " + String(describing: response.response?.statusCode))
@@ -170,33 +184,29 @@ class signupThreeController: UIViewController, UITextFieldDelegate  {
 									.responseString { response in
 										print("/update/moodleUsername " + String(describing: response.response?.statusCode))
 										_ = Alamofire.request("https://da.gihs.sa.edu.au/stirling/accounts/update/moodlePassword", method: .post, parameters: moodlePassParameters)
-											.responseString { response in
-												print("/update/moodlePassword " + String(describing: response.response?.statusCode))
-												self.loggedIn()
+											.responseString { moodle in
+												print("/update/moodlePassword " + String(describing: moodle.response?.statusCode))
+												Answers.logSignUp(withMethod: "Built-In", success: 1, customAttributes: [:])
+												if moodle.response?.statusCode == 200{
+													self.loggedIn()
+												}
+												
 										}
 								}
 						}
 				}
 		}
 		
-		
-
-
-		
-		
-		
-		
-		
-		
-		
-		
-		
-
-		
-		
 	}
 	
 	func loggedIn() {//Switches user to logged in state.
+		let defaults = KeychainSwift()
+		let stirlingUsername = defaults.get( "stirlingUsername")
+		let stirlingPassword = defaults.get( "stirlingPassword")
+		let keychain = KeychainSwift()
+		keychain.set(stirlingUsername!, forKey: "username")
+		keychain.set(stirlingPassword!, forKey: "password")
+		UserDefaults.standard.set("yes", forKey: "isloggedIn")
 		let storyboard = UIStoryboard(name: "Main", bundle: nil)
 		let mainController = storyboard.instantiateViewController(withIdentifier: "initialView") as UIViewController
 		let appDelegate =  UIApplication.shared.delegate as! AppDelegate
@@ -204,13 +214,7 @@ class signupThreeController: UIViewController, UITextFieldDelegate  {
 	}
 	
 	func credentialsCorrect(){//In future I will add login validation, this is the groundwork.
-		let defaults = UserDefaults()
-		let stirlingUsername = defaults.object(forKey: "stirlingUsername")
-		let stirlingPassword = defaults.object(forKey: "stirlingPassword")
-		let keychain = KeychainSwift()
-		keychain.set(stirlingUsername as! String, forKey: "username")
-		keychain.set(stirlingPassword as! String, forKey: "password")
-		UserDefaults.standard.set("yes", forKey: "isloggedIn")
+		
 		loggedIn()}
 	
 	func checkInput(){
@@ -223,10 +227,9 @@ class signupThreeController: UIViewController, UITextFieldDelegate  {
 			errorMessage.isHidden = false
 		}
 		if response == true{
-			let defaults = UserDefaults()
+			let defaults = KeychainSwift()
 			defaults.set(self.moodleUsername.text!, forKey: "moodleUsername")
 			defaults.set(self.moodlePassword.text!, forKey: "moodlePassword")
-			credentialsCorrect()
 			createAccount()
 			
 
