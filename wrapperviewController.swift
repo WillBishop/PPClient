@@ -8,37 +8,48 @@
 
 import UIKit
 import SideMenu
-
-
+import Crashlytics
 
 class wrapperviewController: UIViewController {
 
-	var selectedView = UserDefaults.standard.object(forKey: "selectedView") as? String ?? "Diary"
+	var selectedView = UserDefaults.standard.object(forKey: "selectedView") as? String ?? "Daily Classes"
 	/* In the future, the selectedView may be stored in UserDefaults, that way when the user closes the app, when the launch it again it will open to where they left off. This kind of behaviour is promoted in the Apple Guideline */
+	
+	var classList = UserDefaults.standard.object(forKey: "cachedClasses") as? [String] ?? [String]()
 		
 	
 	@IBOutlet weak var embeddedView: UIView!
 	
-	override var preferredStatusBarStyle: UIStatusBarStyle{
-		return .lightContent
-	}
+	
+	
 	override func viewWillAppear(_ animated: Bool) {
 		//selectedView = "Diary"
 		_ = Style.loadTheme()
 		print("Selected \(selectedView)")
 		
+		let rightSwipe = UISwipeGestureRecognizer(target: self, action: #selector(revealMenu)) //Gesture to bring out side menu (swipe from left to right)
+		rightSwipe.direction = .right
+		view.addGestureRecognizer(rightSwipe)
 		
-		
+		print(classList)
 		//self.navigationItem.titleView = setTitle(title: "Diary", subtitle: "12th of April")
 		let storyboard = UIStoryboard(name: "Main", bundle: nil)
-		
-		let initialViewController = storyboard.instantiateViewController(withIdentifier: selectedView)
-		embedView(initialViewController)
+		if	classList.contains(selectedView){
+			print("special")
+			let initialViewController = storyboard.instantiateViewController(withIdentifier: "classOverview")
+			UserDefaults.standard.set(selectedView, forKey: "selectedClass")
+			embedView(initialViewController)
+		}else {
+			let initialViewController = storyboard.instantiateViewController(withIdentifier: selectedView)
+			embedView(initialViewController)
+
+			}
 		
 		let themeName = Style.loadTheme()
 		SideMenuManager.menuFadeStatusBar = false
 		SideMenuManager.menuWidth = UIScreen.main.bounds.width / 2
 		navigationController?.navigationBar.barTintColor = Style.secionHeaderNavigationBarColor
+		navigationController?.navigationBar.isTranslucent = false
 		var image = UIImage(named: "hamburgerLightBlue")?.withRenderingMode(.alwaysOriginal)
 		
 		if themeName == "Light"{
@@ -54,10 +65,11 @@ class wrapperviewController: UIViewController {
 		
 	}
 	
+	
 	func embedView(_ newView: UIViewController){
 		print("Setting title")
 		self.navigationItem.title = selectedView
-		if selectedView == "Diary"{
+		if selectedView == "Daily Classes"{
 			let date = NSDate()
 			_ = DateFormatter.Style.long
 			
@@ -68,22 +80,17 @@ class wrapperviewController: UIViewController {
 			var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 			let sub = "\(sounds[String(describing: day)]!) of \(months[month - 1])"
 			
-			self.navigationItem.titleView = setTitle(title: "Diary", subtitle: sub)
+			self.navigationItem.titleView = setTitle(title: "Daily Classes", subtitle: sub)
 			
-		} else{
-			self.navigationController?.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName: Style.sectionHeaderTitleColor]
+		}else{
+			self.navigationController?.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName: Style.navbarTitleColor]
 		}
 		print("Loading View \(selectedView)")
 		
-		print(newView.view)
 		print("Adjustings frame")
-		print(newView.view.frame)
 		
-		newView.view.frame = CGRect(x:0, y:0, width:375, height:667)
-		print("Adding view")
-		
-		
-		print(embeddedView)
+	    //newView.view.frame = embeddedView.bounds
+		print("BUT Y THO", newView.view.frame.origin.y)
 		self.embeddedView.addSubview((newView.view)!) //This line has caused be 7 hours of grief so far
 		
 		print("Adding view to child")
@@ -93,16 +100,16 @@ class wrapperviewController: UIViewController {
 		print("Initial Load")
 
 		
-		UserDefaults.standard.set("Diary", forKey: "selectedView")
+		UserDefaults.standard.set("Daily Classes", forKey: "selectedView")
 	}
 	func setTitle(title:String, subtitle:String) -> UIView {
 		
-		let titleLabel = UILabel(frame: CGRect(x:10, y:-2, width:0, height:0))
+		let titleLabel = UILabel(frame: CGRect(x:0, y:-2, width:0, height:0))
 		
 		titleLabel.backgroundColor = UIColor.clear
 		titleLabel.textColor = UIColor.black
 		titleLabel.font = UIFont.boldSystemFont(ofSize: 17)
-		titleLabel.attributedText = NSAttributedString(string: title, attributes: [NSForegroundColorAttributeName: Style.sectionHeaderTitleColor])
+		titleLabel.attributedText = NSAttributedString(string: title, attributes: [NSForegroundColorAttributeName: Style.navbarHeaderColor])
 		
 		titleLabel.sizeToFit()
 		
@@ -110,7 +117,7 @@ class wrapperviewController: UIViewController {
 		subtitleLabel.backgroundColor = UIColor.clear
 		subtitleLabel.textColor = UIColor.black
 		subtitleLabel.font = UIFont.systemFont(ofSize: 12)
-		subtitleLabel.attributedText = NSAttributedString(string: subtitle, attributes: [NSForegroundColorAttributeName: Style.sectionHeaderTitleColor])
+		subtitleLabel.attributedText = NSAttributedString(string: subtitle, attributes: [NSForegroundColorAttributeName: Style.navbarHeaderColor])
 		subtitleLabel.sizeToFit()
 		
 		let titleView = UIView(frame: CGRect(x:0, y:0, width:max(titleLabel.frame.size.width, subtitleLabel.frame.size.width), height:30))
@@ -141,6 +148,7 @@ class wrapperviewController: UIViewController {
 		
 	}
 	func revealMenu(){
+		print("Detected Swipe")
 		let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "sidemenuController")
 		
 		
@@ -149,9 +157,8 @@ class wrapperviewController: UIViewController {
 	}
     override func viewDidLoad() {
 		
-		
-        super.viewDidLoad()
 
+        super.viewDidLoad()
         // Do any additional setup after loading the view.
     }
 
